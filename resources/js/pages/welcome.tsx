@@ -1,12 +1,17 @@
+import AuthModal from '@/components/auth-modal';
+import ForgotPasswordModal from '@/components/forgot-password-modal';
+import LoginModal from '@/components/login-modal';
+import RegisterModal from '@/components/register-modal';
 import { type SharedData } from '@/types';
 import { Head, Link, usePage } from '@inertiajs/react';
-import LoginModal from '@/components/login-modal';
 import { useState } from 'react';
 
 export default function Welcome() {
     const { auth } = usePage<SharedData>().props;
-    const [isLoginModalOpen, setIsLoginModalOpen ] = useState(false);
-
+    const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
+    const [isRegisterModalOpen, setIsRegisterModalOpen] = useState(false);
+    const [isForgotPasswordModalOpen, setIsForgotPasswordModalOpen] = useState(false);
+    const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
     return (
         <>
             <Head title="Welcome">
@@ -43,9 +48,10 @@ export default function Welcome() {
                 </header>
                 <div className="flex w-full items-center justify-center opacity-100 transition-opacity duration-750 lg:grow starting:opacity-0">
                     <main className="flex w-full max-w-[335px] flex-col-reverse lg:max-w-4xl lg:flex-row">
-                        <button onClick={() => setIsLoginModalOpen(true)}>
-kopal
-                        </button>
+                        <button onClick={() => setIsLoginModalOpen(true)}>login</button>
+                        <button onClick={() => setIsRegisterModalOpen(true)}>register</button>
+                        <button onClick={() => setIsForgotPasswordModalOpen(true)}>forgot password</button>
+                        <button onClick={() => setIsAuthModalOpen(true)}>auth</button>
                         <div className="flex-1 rounded-br-lg rounded-bl-lg bg-white p-6 pb-12 text-[13px] leading-[20px] shadow-[inset_0px_0px_0px_1px_rgba(26,26,0,0.16)] lg:rounded-tl-lg lg:rounded-br-none lg:p-20 dark:bg-[#161615] dark:text-[#EDEDEC] dark:shadow-[inset_0px_0px_0px_1px_#fffaed2d]">
                             <h1 className="mb-1 font-medium">Let's get started</h1>
                             <p className="mb-2 text-[#706f6c] dark:text-[#A1A09A]">
@@ -791,7 +797,36 @@ kopal
                     </main>
                 </div>
                 <div className="hidden h-14.5 lg:block"></div>
-                 <LoginModal isOpen={isLoginModalOpen} onClose={() => setIsLoginModalOpen(false)} canResetPassword={true}/>
+                <LoginModal
+                    isOpen={isLoginModalOpen}
+                    onClose={() => setIsLoginModalOpen(false)}
+                    canResetPassword={true}
+                    onRegisterClick={() => {
+                        setIsLoginModalOpen(false);
+                        setIsRegisterModalOpen(true);
+                    }}
+                    onForgotPasswordClick={() => {
+                        setIsLoginModalOpen(false);
+                        setIsForgotPasswordModalOpen(true);
+                    }}
+                />
+                <RegisterModal
+                    isOpen={isRegisterModalOpen}
+                    onClose={() => setIsRegisterModalOpen(false)}
+                    onLoginClick={() => {
+                        setIsRegisterModalOpen(false);
+                        setIsLoginModalOpen(true);
+                    }}
+                />
+                <ForgotPasswordModal
+                    isOpen={isForgotPasswordModalOpen}
+                    onClose={() => setIsForgotPasswordModalOpen(false)}
+                    onLoginClick={() => {
+                        setIsForgotPasswordModalOpen(false);
+                        setIsLoginModalOpen(true);
+                    }}
+                />
+                <AuthModal isOpen={isAuthModalOpen} onClose={() => setIsAuthModalOpen(false)} canResetPassword={true} status={status} />
             </div>
         </>
     );

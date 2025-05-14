@@ -11,6 +11,7 @@ function Input({ className, type, ...props }: React.ComponentProps<"input">) {
         "hover:border-blue-500 focus:border-blue-500 focus-visible:ring-blue-500 focus-visible:ring-[2px]",
         "aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive",
       )}
+      
       {...props}
     />
   )
