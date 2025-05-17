@@ -9,7 +9,7 @@ export interface BreadcrumbItem {
     title: string;
     href: string;
 }
-
+        
 export interface NavGroup {
     title: string;
     items: NavItem[];
@@ -35,6 +35,7 @@ export interface User {
     id: number;
     name: string;
     email: string;
+    username: string;
     avatar?: string;
     email_verified_at: string | null;
     created_at: string;

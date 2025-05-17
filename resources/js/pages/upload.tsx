@@ -1,5 +1,7 @@
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
+import Switch from 'react-switch';
+
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -11,7 +13,6 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Toggle } from '@/components/ui/toggle';
 import AppLayout from '@/layouts/app-layout';
 import { Head } from '@inertiajs/react';
 import { CheckIcon, ChevronDownIcon, ImageIcon } from 'lucide-react';
@@ -47,17 +48,21 @@ export default function Upload() {
                     <Card className="p-6">
                         {/* Tab Header */}
                         <div className="mb-6 border-b-2 border-blue-800 pb-2">
-                            <h2 className="text-lg font-semibold">Audio Book Details</h2>
+                            <h2 className="text-lg">Audio Book Details</h2>
                         </div>
 
                         <form className="space-y-5">
                             <div>
-                                <Label htmlFor="title">Title</Label>
+                                <Label htmlFor="title" className="font-bold">
+                                    Title
+                                </Label>
                                 <Input id="title" placeholder="Enter audiobook title" />
                             </div>
 
                             <div>
-                                <Label htmlFor="description">Description</Label>
+                                <Label htmlFor="description" className="font-bold">
+                                    Description
+                                </Label>
                                 <textarea
                                     id="description"
                                     rows={3}
@@ -69,12 +74,16 @@ export default function Upload() {
                             </div>
 
                             <div>
-                                <Label htmlFor="audio">Audio Book File (MP3)</Label>
+                                <Label htmlFor="audio" className="font-bold">
+                                    Audio Book File (MP3)
+                                </Label>
                                 <Input id="audio" type="file" accept="audio/mp3" />
                             </div>
 
-                            <div>
-                                <Label htmlFor="category">Category</Label>
+                            <div className="flex items-center space-x-4">
+                                <Label htmlFor="category" className="w-24 text-right font-bold">
+                                    Category
+                                </Label>
                                 <DropdownMenu>
                                     <DropdownMenuTrigger asChild>
                                         <Button variant="outline" className="w-full justify-between">
@@ -112,35 +121,50 @@ export default function Upload() {
                                 {' '}
                                 {/* Added some bottom margin */}
                                 {/* Public Label */}
-                                <span className="text-lg leading-tight font-semibold text-gray-900">Public</span>{' '}
+                                <span className="text-lg leading-tight font-semibold text-gray-900 dark:text-white">Public</span>{' '}
                                 {/* Added leading-tight for vertical alignment */}
                                 {/* Switch Container (acts as the Track) */}
                                 {/* Apply state-based background color and size here */}
-                                <div
-                                    className={`relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:outline-none ${isPublic ? 'bg-blue-600' : 'bg-gray-200'} `}
-                                    // Mirror the state to this div to easily control track styles based on state
-                                    data-state={isPublic ? 'on' : 'off'}
-                                >
-                                    {/* The Toggle component acts as the Thumb */}
-                                    {/* We style its appearance and control its position based on state */}
-                                    {/* The 'size="lg"' prop on Toggle might need to be adjusted or removed */}
-                                    <Toggle
-                                        pressed={isPublic}
-                                        onPressedChange={setIsPublic}
-                                        // Apply classes to make Toggle look and move like the thumb
-                                        // We use 'data-[state]' on the *Toggle* component itself (which your component likely provides)
-                                        className={`/* Position the thumb based on its own data-state attribute */ /* Move 20px to the right */ pointer-events-auto inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out data-[state="off"]:translate-x-0 data-[state="on"]:translate-x-5`}
-                                        // Visually hide the text content 'ON'/'OFF' that was inside
-                                    >
-                                        {/* Accessible label for screen readers */}
-                                        <span className="sr-only">{isPublic ? 'On' : 'Off'}</span>
-                                        {/* Remove any visible text content like {isPublic ? 'ON' : 'OFF'} from inside the Toggle */}
-                                    </Toggle>
-                                </div>
+                                <Switch
+                                    checked={isPublic}
+                                    onChange={setIsPublic}
+                                    onColor="#3b82f6" // Tailwind blue-500
+                                    offColor="#6b7280" // Tailwind gray-500
+                                    checkedIcon={
+                                        <div
+                                            style={{
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                height: '100%',
+                                                width: 48,
+                                                color: 'white',
+                                                fontSize: 12,
+                                                fontWeight: 600,
+                                                paddingLeft: 6,
+                                            }}
+                                        >
+                                            On
+                                        </div>
+                                    }
+                                    uncheckedIcon={
+                                        <div
+                                            style={{
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                height: '100%',
+                                                width: 48,
+                                                color: 'white',
+                                                fontSize: 12,
+                                                fontWeight: 600,
+                                                paddingLeft: 6,
+                                            }}
+                                        >
+                                            Off
+                                        </div>
+                                    }
+                                />
                             </div>
                             <p className="text-xs text-gray-400">You can turn your post on and off whenever you want.</p>
-
-                        
                         </form>
                     </Card>
                 </div>

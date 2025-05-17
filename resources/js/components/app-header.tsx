@@ -252,15 +252,25 @@ export function AppHeader({ breadcrumbs = [] }: AppHeaderProps) {
                         <div className="hidden items-center lg:flex">
                             <form onSubmit={handleSearchSubmit} className="relative ml-2 flex items-center">
                                 {/* Search Icon inside the input */}
-                                {/* <Search className="text-muted-foreground absolute left-3 h-5 w-5" /> */}
+                                <svg
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    viewBox="0 0 20 20"
+                                    fill="currentColor"
+                                    className="absolute top-2 left-2 h-5 w-5 text-gray-500"
+                                >
+                                    <path
+                                        fillRule="evenodd"
+                                        d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z"
+                                        clipRule="evenodd"
+                                    />
+                                </svg>
                                 {/* Input with left padding to accommodate the icon */}
-                                <Input
+                                <input
                                     type="search"
                                     placeholder="Search..."
                                     value={searchTerm}
                                     onChange={(e) => setSearchTerm(e.target.value)}
-                                    autoFocus
-                                    className="h-9 w-56 pl-10 transition-all duration-300 ease-in-out"
+                                    className="focus:ring-opacity-50 h-9 w-56 rounded-md border border-gray-300 pr-2 pl-8 transition-all duration-300 ease-in-out focus:border-blue-500 focus:ring-blue-500"
                                 />
                             </form>
                         </div>
@@ -289,7 +299,7 @@ export function AppHeader({ breadcrumbs = [] }: AppHeaderProps) {
                                     <Button
                                         variant="ghost"
                                         asChild
-                                        className="hidden rounded-lg bg-blue-800 px-4 py-3 transition-colors hover:bg-blue-900 lg:inline-flex"
+                                        className="hidden rounded-full bg-blue-800 px-4 py-3 transition-colors hover:bg-blue-900 lg:inline-flex"
                                     >
                                         <Link href="/upload" className="flex items-center space-x-2">
                                             <Upload className="size-6 text-white opacity-80 hover:opacity-100" />
@@ -352,7 +362,7 @@ export function UploadHeader({
 }) {
     const handleCancel = () => {
         if (onCancel) return onCancel();
-        router.visit(document.referrer || '/dashboard', { replace: true });
+        router.visit('/dashboard', { replace: true });
     };
     return (
         <div className="border-sidebar-border/80 border-b bg-white dark:bg-neutral-900">
@@ -367,7 +377,11 @@ export function UploadHeader({
                     <Button variant="ghost" type="button" onClick={handleCancel} className="text-neutral-500">
                         Cancel
                     </Button>
-                    <Button type="button" onClick={onPublish} className="bg-blue-800 text-white hover:bg-blue-700">
+                    <Button
+                        type="button"
+                        onClick={onPublish}
+                        className="!hover:bg-blue-700 !rounded-md !border-0 !bg-blue-800 !text-white !shadow-none"
+                    >
                         Publish
                     </Button>
                 </div>
