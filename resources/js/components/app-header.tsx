@@ -209,7 +209,7 @@ export function AppHeader({ breadcrumbs = [] }: AppHeaderProps) {
                         <AppLogo />
                     </Link>
                     {/* Desktop Navigation - New Structure */}
-                    <div className="ml-4 hidden h-full flex-grow items-center space-x-1 md:space-x-3 lg:flex">
+                    <div className="hidden h-full flex-grow items-center space-x-1 md:space-x-3 lg:flex">
                         {' '}
                         {/* Added flex-grow */}
                         {/* Browse Dropdown */}
@@ -353,17 +353,17 @@ export function AppHeader({ breadcrumbs = [] }: AppHeaderProps) {
 // --- Upload Header ---
 export function UploadHeader({
     title = 'Untitled Audio Book',
-    onCancel,
     onPublish,
+    isPublishing = false,
 }: {
     title?: string;
-    onCancel?: () => void;
     onPublish?: () => void;
+    isPublishing?: boolean;
 }) {
     const handleCancel = () => {
-        if (onCancel) return onCancel();
         router.visit('/dashboard', { replace: true });
     };
+
     return (
         <div className="border-sidebar-border/80 border-b bg-white dark:bg-neutral-900">
             <div className="mx-auto flex h-16 items-center justify-between px-4 md:max-w-7xl">
@@ -374,15 +374,16 @@ export function UploadHeader({
                 </div>
                 {/* Right */}
                 <div className="flex items-center gap-2">
-                    <Button variant="ghost" type="button" onClick={handleCancel} className="text-neutral-500">
+                    <Button variant="ghost" type="button" onClick={handleCancel} className="text-neutral-500" disabled={isPublishing}>
                         Cancel
                     </Button>
                     <Button
                         type="button"
                         onClick={onPublish}
+                        disabled={isPublishing}
                         className="!hover:bg-blue-700 !rounded-md !border-0 !bg-blue-800 !text-white !shadow-none"
                     >
-                        Publish
+                        {isPublishing ? 'Publishing...' : 'Publish'}
                     </Button>
                 </div>
             </div>

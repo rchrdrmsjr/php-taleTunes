@@ -3,7 +3,7 @@ import { AudiobookCard } from '@/components/ui/audiobook-card';
 import { HorizontalAudiobookCard } from '@/components/ui/horizontal-audiobook-card';
 import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem } from '@/types';
-import { Head } from '@inertiajs/react';
+import { Head, usePage } from '@inertiajs/react';
 import { useEffect, useRef, useState } from 'react';
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -146,6 +146,10 @@ export default function Dashboard() {
     const [josephWorksCanScrollLeft, setJosephWorksCanScrollLeft] = useState(false);
     const [josephWorksCanScrollRight, setJosephWorksCanScrollRight] = useState(false);
 
+    // Get audiobooks from backend
+    const userAudiobooks = (usePage().props as any)?.userAudiobooks ?? [];
+    const otherAudiobooks = (usePage().props as any)?.otherAudiobooks ?? [];
+
     useEffect(() => {
         const favoritesContainer = favoritesScrollRef.current;
         const recommendationsContainer = recommendationsScrollRef.current;
@@ -213,7 +217,7 @@ export default function Dashboard() {
     };
 
     return (
-        <AppLayout breadcrumbs={breadcrumbs}>
+        <AppLayout>
             <Head title="Dashboard" />
             <div className="flex h-full flex-1 flex-col gap-8 p-4">
                 {/* Section 1: Hero Carousel */}
@@ -288,8 +292,8 @@ export default function Dashboard() {
                 {/* Section 3: Joseph's Works */}
                 <section className="space-y-4">
                     <div className="flex flex-col justify-between gap-2">
-                        <h2 className="text-2xl font-semibold">Joseph Works</h2>
-                        <p className="text-gray-600">Explore Joseph's creative works and literary contributions</p>
+                        <h2 className="text-2xl font-semibold">My Works</h2>
+                        <p className="text-gray-600">Explore your creative works and literary contributions</p>
                     </div>
                     <div className="relative">
                         <div
@@ -297,11 +301,20 @@ export default function Dashboard() {
                             className="no-scrollbar flex snap-x snap-mandatory space-x-6 overflow-x-auto pb-4"
                             style={{ scrollPaddingLeft: '1rem', scrollPaddingRight: '1rem' }}
                         >
-                            {josephWorks.map((work) => (
-                                <div key={work.title} className="audiobook-item w-[350px] flex-shrink-0 snap-start">
-                                    <HorizontalAudiobookCard {...work} />
-                                </div>
-                            ))}
+                            {userAudiobooks && userAudiobooks.length > 0 ? (
+                                userAudiobooks.map((work: any) => (
+                                    <div key={work.id} className="audiobook-item w-[350px] flex-shrink-0 snap-start">
+                                        <HorizontalAudiobookCard
+                                            title={work.title}
+                                            author={work.user?.name || 'You'}
+                                            coverImage={work.cover_image ? `/storage/${work.cover_image}` : ''}
+                                            description={work.description}
+                                        />
+                                    </div>
+                                ))
+                            ) : (
+                                <div className="p-4 text-gray-500">You have not published any audiobooks yet.</div>
+                            )}
                             <div className="flex-shrink-0" style={{ width: '1px' }}></div>
                         </div>
 
@@ -351,11 +364,20 @@ export default function Dashboard() {
                     </div>
                     <div className="relative">
                         <div ref={recommendationsScrollRef} className="no-scrollbar flex snap-x snap-mandatory space-x-6 overflow-x-auto pb-4">
-                            {recommendations.map((book) => (
-                                <div key={book.title} className="audiobook-item flex-shrink-0 snap-start" style={{ width: `calc(25% - 18px)` }}>
-                                    <AudiobookCard {...book} />
-                                </div>
-                            ))}
+                            {otherAudiobooks && otherAudiobooks.length > 0 ? (
+                                otherAudiobooks.map((book: any) => (
+                                    <div key={book.id} className="audiobook-item flex-shrink-0 snap-start" style={{ width: `calc(25% - 18px)` }}>
+                                        <AudiobookCard
+                                            title={book.title}
+                                            author={book.user?.name || 'Unknown'}
+                                            coverImage={book.cover_image ? `/storage/${book.cover_image}` : ''}
+                                            description={book.description}
+                                        />
+                                    </div>
+                                ))
+                            ) : (
+                                <div className="p-4 text-gray-500">No recommendations available at the moment.</div>
+                            )}
                             <div className="flex-shrink-0" style={{ width: '1px' }}></div>
                         </div>
 

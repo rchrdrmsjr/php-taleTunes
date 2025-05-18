@@ -10,7 +10,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 
 type LoginForm = {
-    email: string;
+    login: string;
     password: string;
     remember: boolean;
 };
@@ -26,7 +26,7 @@ interface LoginModalProps {
 
 export default function LoginModal({ isOpen, onClose, status, canResetPassword, onRegisterClick, onForgotPasswordClick }: LoginModalProps) {
     const { data, setData, post, processing, errors, reset } = useForm<Required<LoginForm>>({
-        email: '',
+        login: '',
         password: '',
         remember: false,
     });
@@ -58,17 +58,17 @@ export default function LoginModal({ isOpen, onClose, status, canResetPassword, 
                             {/* <Label htmlFor="email">Email address</Label> */}
                             <Input
                                 id="email"
-                                type="email"
+                                type="text"
                                 required
                                 autoFocus
                                 tabIndex={1}
                                 autoComplete="email"
-                                value={data.email}
-                                onChange={(e) => setData('email', e.target.value)}
+                                value={data.login}
+                                onChange={(e) => setData('login', e.target.value)}
                                 placeholder="Username or email"
                                 className="rounded-sm"
                             />
-                            <InputError message={errors.email} />
+                            <InputError message={errors.login} />
                         </div>
 
                         <div className="grid gap-2">
