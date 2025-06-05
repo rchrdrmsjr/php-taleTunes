@@ -17,11 +17,13 @@ class Audiobook extends Model
         'audio_file',
         'category',
         'is_public',
+        'is_favorite',
         'user_id',
     ];
 
     protected $casts = [
         'is_public' => 'boolean',
+        'is_favorite' => 'boolean',
     ];
 
     public function user(): BelongsTo

@@ -67,4 +67,33 @@ class AudiobookController extends Controller
             ]);
         }
     }
+
+    public function show(Audiobook $audiobook)
+    {
+        // Check if the audiobook is public or belongs to the current user
+        if (!$audiobook->is_public && $audiobook->user_id !== auth()->id()) {
+            abort(403);
+        }
+
+        return response()->json([
+            'audiobook' => $audiobook->load('user'),
+        ]);
+    }
+
+    public function toggleFavorite(Audiobook $audiobook)
+    {
+        // Check if the audiobook is public or belongs to the current user
+        if (!$audiobook->is_public && $audiobook->user_id !== auth()->id()) {
+            abort(403);
+        }
+
+        $audiobook->update([
+            'is_favorite' => !$audiobook->is_favorite
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'is_favorite' => $audiobook->is_favorite
+        ]);
+    }
 } 

@@ -3,7 +3,6 @@ import { Card } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { type AudiobookFormData, type AudiobookFormErrors } from '@/types';
 import { router, useForm } from '@inertiajs/react';
-import { X } from 'lucide-react';
 import { useRef, useState } from 'react';
 import Switch from 'react-switch';
 import { toast, Toaster } from 'sonner';
@@ -141,7 +140,6 @@ export default function Upload() {
                     </DialogHeader>
                     <div className="flex flex-col items-center justify-center py-4">
                         <p className="text-center text-lg">Your work has been successfully published!</p>
-                       
                     </div>
                 </DialogContent>
             </Dialog>

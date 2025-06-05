@@ -15,6 +15,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     Route::get('upload', [AudiobookController::class, 'create'])->name('upload');
     Route::post('upload', [AudiobookController::class, 'store'])->name('audiobooks.store');
+    Route::get('audiobooks/{audiobook}', [AudiobookController::class, 'show'])->name('audiobooks.show');
+    Route::post('audiobooks/{audiobook}/toggle-favorite', [AudiobookController::class, 'toggleFavorite'])->name('audiobooks.toggle-favorite');
 });
 
 Route::get('profile/{username}', [ProfileController::class, 'show'])->name('profile.public');

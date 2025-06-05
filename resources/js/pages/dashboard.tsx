@@ -1,10 +1,12 @@
 import { SimpleCarousel } from '@/components/SimpleCarousel';
 import { AudiobookCard } from '@/components/ui/audiobook-card';
 import { HorizontalAudiobookCard } from '@/components/ui/horizontal-audiobook-card';
+import ViewPostModal from '@/components/view-post-modal';
 import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem } from '@/types';
 import { Head, usePage } from '@inertiajs/react';
 import { useEffect, useRef, useState } from 'react';
+
 const breadcrumbs: BreadcrumbItem[] = [
     {
         title: 'Dashboard',
@@ -14,39 +16,6 @@ const breadcrumbs: BreadcrumbItem[] = [
 
 // Mock data - replace with actual data from your backend
 const heroImages = ['/images/hero1.png', '/images/hero2.png', '/images/hero3.jpg', '/images/hero4.jpg', '/images/hero5.jpg'];
-
-const favoriteAudiobooks = [
-    {
-        title: 'The Great Adventure',
-        author: 'John Smith',
-        coverImage: '/images/book1.jpg',
-        description: 'An epic journey through uncharted territories.',
-    },
-    {
-        title: 'Mystery Manor',
-        author: 'Jane Doe',
-        coverImage: '/images/book2.jpg',
-        description: 'A thrilling mystery that will keep you guessing.',
-    },
-    {
-        title: 'Space Odyssey',
-        author: 'Robert Johnson',
-        coverImage: '/images/book3.jpg',
-        description: 'Explore the vastness of space in this sci-fi adventure.',
-    },
-    {
-        title: 'The Great Adventure',
-        author: 'John Smith',
-        coverImage: '/images/book1.jpg',
-        description: 'An epic journey through uncharted territories.',
-    },
-    {
-        title: 'Mystery Manor',
-        author: 'Jane Doe',
-        coverImage: '/images/book2.jpg',
-        description: 'A thrilling mystery that will keep you guessing.',
-    },
-];
 
 const josephWorks = [
     {
@@ -134,6 +103,8 @@ const recommendations = [
 
 export default function Dashboard() {
     const itemsPerBatch = 4;
+    const [selectedAudiobookId, setSelectedAudiobookId] = useState<number | null>(null);
+    const [isViewModalOpen, setIsViewModalOpen] = useState(false);
 
     const favoritesScrollRef = useRef<HTMLDivElement>(null);
     const recommendationsScrollRef = useRef<HTMLDivElement>(null);
@@ -149,6 +120,7 @@ export default function Dashboard() {
     // Get audiobooks from backend
     const userAudiobooks = (usePage().props as any)?.userAudiobooks ?? [];
     const otherAudiobooks = (usePage().props as any)?.otherAudiobooks ?? [];
+    const favoriteAudiobooks = (usePage().props as any)?.favoriteAudiobooks ?? [];
 
     useEffect(() => {
         const favoritesContainer = favoritesScrollRef.current;
@@ -216,6 +188,11 @@ export default function Dashboard() {
         }
     };
 
+    const handleAudiobookClick = (audiobookId: number) => {
+        setSelectedAudiobookId(audiobookId);
+        setIsViewModalOpen(true);
+    };
+
     return (
         <AppLayout>
             <Head title="Dashboard" />
@@ -243,14 +220,29 @@ export default function Dashboard() {
                     </div>
                     <div className="relative">
                         <div ref={favoritesScrollRef} className="no-scrollbar flex snap-x snap-mandatory space-x-6 overflow-x-auto pb-4">
-                            {favoriteAudiobooks.map((book) => (
-                                <div key={book.title} className="audiobook-item flex-shrink-0 snap-start" style={{ width: `calc(25% - 18px)` }}>
-                                    <AudiobookCard {...book} />
-                                </div>
-                            ))}
+                            {favoriteAudiobooks && favoriteAudiobooks.length > 0 ? (
+                                favoriteAudiobooks.map((book: any) => (
+                                    <div
+                                        key={book.id}
+                                        className="audiobook-item flex-shrink-0 cursor-pointer snap-start"
+                                        style={{ width: `calc(25% - 18px)` }}
+                                        onClick={() => handleAudiobookClick(book.id)}
+                                    >
+                                        <AudiobookCard
+                                            title={book.title}
+                                            author={book.user?.name || 'Unknown'}
+                                            coverImage={book.cover_image ? `/storage/${book.cover_image}` : ''}
+                                            description={book.description}
+                                        />
+                                    </div>
+                                ))
+                            ) : (
+                                <div className="p-4 text-gray-500">You have not added any favorite audiobooks yet.</div>
+                            )}
                             <div className="flex-shrink-0" style={{ width: '1px' }}></div>
                         </div>
 
+                        {/* left button */}
                         {favoritesCanScrollLeft && (
                             <button
                                 onClick={() => handlePreviousSlide(favoritesScrollRef)}
@@ -269,6 +261,7 @@ export default function Dashboard() {
                             </button>
                         )}
 
+                        {/* right button */}
                         {favoritesCanScrollRight && (
                             <button
                                 onClick={() => handleNextSlide(favoritesScrollRef)}
@@ -303,7 +296,11 @@ export default function Dashboard() {
                         >
                             {userAudiobooks && userAudiobooks.length > 0 ? (
                                 userAudiobooks.map((work: any) => (
-                                    <div key={work.id} className="audiobook-item w-[350px] flex-shrink-0 snap-start">
+                                    <div
+                                        key={work.id}
+                                        className="audiobook-item w-fit flex-shrink-0 cursor-pointer snap-start"
+                                        onClick={() => handleAudiobookClick(work.id)}
+                                    >
                                         <HorizontalAudiobookCard
                                             title={work.title}
                                             author={work.user?.name || 'You'}
@@ -366,7 +363,12 @@ export default function Dashboard() {
                         <div ref={recommendationsScrollRef} className="no-scrollbar flex snap-x snap-mandatory space-x-6 overflow-x-auto pb-4">
                             {otherAudiobooks && otherAudiobooks.length > 0 ? (
                                 otherAudiobooks.map((book: any) => (
-                                    <div key={book.id} className="audiobook-item flex-shrink-0 snap-start" style={{ width: `calc(25% - 18px)` }}>
+                                    <div
+                                        key={book.id}
+                                        className="audiobook-item flex-shrink-0 cursor-pointer snap-start"
+                                        style={{ width: `calc(25% - 18px)` }}
+                                        onClick={() => handleAudiobookClick(book.id)}
+                                    >
                                         <AudiobookCard
                                             title={book.title}
                                             author={book.user?.name || 'Unknown'}
@@ -418,6 +420,16 @@ export default function Dashboard() {
                         )}
                     </div>
                 </section>
+
+                {/* View Post Modal */}
+                <ViewPostModal
+                    isOpen={isViewModalOpen}
+                    onClose={() => {
+                        setIsViewModalOpen(false);
+                        setSelectedAudiobookId(null);
+                    }}
+                    audiobookId={selectedAudiobookId}
+                />
             </div>
         </AppLayout>
     );
