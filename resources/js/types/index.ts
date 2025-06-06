@@ -24,11 +24,11 @@ export interface SharedData {
 export interface AudiobookFormData {
     title: string;
     description: string;
-    cover_image: File | null;
+    cover_image: File[] | null;
     audio_file: File | null;
     category: string;
     is_public: boolean;
-    [key: string]: string | File | null | boolean;
+    [key: string]: string | File | File[] | null | boolean;
 }
 
 export interface AudiobookFormErrors {

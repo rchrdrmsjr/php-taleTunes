@@ -25,7 +25,7 @@ import { CheckIcon, ChevronDownIcon, ImageIcon } from 'lucide-react';
 export default function Upload() {
     const [isPublic, setIsPublic] = useState(true);
     const [category, setCategory] = useState('');
-    const [coverPreview, setCoverPreview] = useState<string | null>(null);
+    const [coverPreview, setCoverPreview] = useState<string[]>([]);
     const [showSuccessModal, setShowSuccessModal] = useState(false);
     const [showContinueModal, setShowContinueModal] = useState(false);
     const coverInputRef = useRef<HTMLInputElement>(null);
@@ -41,14 +41,22 @@ export default function Upload() {
     });
 
     const handleCoverChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const file = e.target.files?.[0];
-        if (file) {
-            setData('cover_image', file);
-            const reader = new FileReader();
-            reader.onloadend = () => {
-                setCoverPreview(reader.result as string);
-            };
-            reader.readAsDataURL(file);
+        const files = e.target.files;
+        if (files) {
+            if (files.length > 10) {
+                toast.error('Maximum 10 images allowed');
+                return;
+            }
+            const newPreviews: string[] = [];
+            Array.from(files).forEach((file) => {
+                const reader = new FileReader();
+                reader.onloadend = () => {
+                    newPreviews.push(reader.result as string);
+                    setCoverPreview([...newPreviews]);
+                };
+                reader.readAsDataURL(file);
+            });
+            setData('cover_image', Array.from(files));
         }
     };
 
@@ -62,7 +70,7 @@ export default function Upload() {
     const clearAllFields = () => {
         reset();
         setCategory('');
-        setCoverPreview(null);
+        setCoverPreview([]);
         setIsPublic(true);
         if (coverInputRef.current) coverInputRef.current.value = '';
         if (audioInputRef.current) audioInputRef.current.value = '';
@@ -77,7 +85,9 @@ export default function Upload() {
         formData.append('is_public', data.is_public.toString());
 
         if (data.cover_image) {
-            formData.append('cover_image', data.cover_image);
+            Array.from(data.cover_image).forEach((file) => {
+                formData.append('cover_image[]', file);
+            });
         }
         if (data.audio_file) {
             formData.append('audio_file', data.audio_file);
@@ -89,24 +99,41 @@ export default function Upload() {
             return;
         }
 
+        let toastId: string | number | undefined;
+
         post(route('audiobooks.store'), {
             ...formData,
             forceFormData: true,
+            method: 'post',
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+                Accept: 'application/json',
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
+            },
+            onProgress: (progress) => {
+                if (progress && progress.loaded && progress.total) {
+                    const percentage = Math.round((progress.loaded * 100) / progress.total);
+                    if (toastId) {
+                        toast.dismiss(toastId);
+                    }
+                    toastId = toast.loading(`Uploading... ${percentage}%`);
+                }
+            },
             onSuccess: () => {
+                if (toastId) {
+                    toast.dismiss(toastId);
+                }
                 setShowSuccessModal(true);
                 toast.success('Audiobook published successfully!');
             },
             onError: (errors: AudiobookFormErrors) => {
+                if (toastId) {
+                    toast.dismiss(toastId);
+                }
                 console.error('Upload errors:', errors);
                 Object.values(errors).forEach((error) => {
                     toast.error(error);
                 });
-            },
-            onStart: () => {
-                console.log('Starting upload...');
-            },
-            onFinish: () => {
-                console.log('Upload finished');
             },
         });
     };
@@ -171,8 +198,17 @@ export default function Upload() {
                             className="flex h-40 w-full cursor-pointer flex-col items-center justify-center rounded-lg border-2 border-dashed border-white"
                             onClick={() => coverInputRef.current?.click()}
                         >
-                            {coverPreview ? (
-                                <img src={coverPreview} alt="Cover preview" className="h-full w-full rounded-lg object-cover" />
+                            {coverPreview.length > 0 ? (
+                                <div className="grid grid-cols-2 gap-2">
+                                    {coverPreview.map((preview, index) => (
+                                        <img
+                                            key={index}
+                                            src={preview}
+                                            alt={`Cover preview ${index + 1}`}
+                                            className="h-32 w-full rounded-lg object-cover"
+                                        />
+                                    ))}
+                                </div>
                             ) : (
                                 <>
                                     <ImageIcon className="h-12 w-12" />
@@ -180,7 +216,15 @@ export default function Upload() {
                                 </>
                             )}
                         </div>
-                        <Input id="cover_image" type="file" accept="image/*" className="hidden" ref={coverInputRef} onChange={handleCoverChange} />
+                        <Input
+                            id="cover_image"
+                            type="file"
+                            accept="image/*"
+                            className="hidden"
+                            ref={coverInputRef}
+                            onChange={handleCoverChange}
+                            multiple
+                        />
                         <Label htmlFor="cover_image" className="mt-4 w-full">
                             <Button asChild variant="outline" className="w-full border-white text-white hover:bg-white hover:text-blue-600">
                                 Browse...

@@ -24,6 +24,11 @@ class Audiobook extends Model
     protected $casts = [
         'is_public' => 'boolean',
         'is_favorite' => 'boolean',
+        'cover_image' => 'array',
+    ];
+
+    protected $attributes = [
+        'cover_image' => '[]',
     ];
 
     public function user(): BelongsTo

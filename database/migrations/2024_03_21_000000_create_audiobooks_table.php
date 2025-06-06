@@ -13,7 +13,7 @@ return new class extends Migration
             $table->foreignId('user_id')->constrained()->onDelete('cascade');
             $table->string('title');
             $table->text('description')->nullable();
-            $table->string('cover_image');
+            $table->longText('cover_image')->nullable();
             $table->string('audio_file');
             $table->string('category');
             $table->boolean('is_public')->default(true);

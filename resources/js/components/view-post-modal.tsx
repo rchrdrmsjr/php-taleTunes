@@ -1,14 +1,14 @@
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import axios from 'axios';
-import { Heart, Pause, Play } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Heart, Pause, Play } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
 interface Audiobook {
     id: number;
     title: string;
     description: string;
-    cover_image: string;
+    cover_image: string[];
     audio_file: string;
     category: string;
     is_public: boolean;
@@ -30,7 +30,23 @@ export default function ViewPostModal({ isOpen, onClose, audiobookId }: ViewPost
     const [audiobook, setAudiobook] = useState<Audiobook | null>(null);
     const [isPlaying, setIsPlaying] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
+    const [currentImageIndex, setCurrentImageIndex] = useState(0);
     const [audio] = useState(new Audio());
+
+    // Helper function to get cover images
+    const getCoverImages = (coverImage: string | string[]): string[] => {
+        if (Array.isArray(coverImage)) {
+            return coverImage;
+        }
+        try {
+            // Try to parse if it's a JSON string
+            const parsed = JSON.parse(coverImage);
+            return Array.isArray(parsed) ? parsed : [coverImage];
+        } catch {
+            // If parsing fails, return as single item array
+            return [coverImage];
+        }
+    };
 
     useEffect(() => {
         if (audiobookId && isOpen) {
@@ -49,7 +65,11 @@ export default function ViewPostModal({ isOpen, onClose, audiobookId }: ViewPost
         try {
             setIsLoading(true);
             const response = await axios.get(route('audiobooks.show', { audiobook: audiobookId }));
-            setAudiobook(response.data.audiobook);
+            const data = response.data.audiobook;
+            // Ensure cover_image is properly handled
+            data.cover_image = getCoverImages(data.cover_image);
+            setAudiobook(data);
+            setCurrentImageIndex(0);
         } catch (error) {
             console.error('Error fetching audiobook:', error);
         } finally {
@@ -80,6 +100,16 @@ export default function ViewPostModal({ isOpen, onClose, audiobookId }: ViewPost
         }
     };
 
+    const nextImage = () => {
+        if (!audiobook) return;
+        setCurrentImageIndex((prev) => (prev + 1) % audiobook.cover_image.length);
+    };
+
+    const previousImage = () => {
+        if (!audiobook) return;
+        setCurrentImageIndex((prev) => (prev - 1 + audiobook.cover_image.length) % audiobook.cover_image.length);
+    };
+
     if (!audiobook) {
         return null;
     }
@@ -88,9 +118,40 @@ export default function ViewPostModal({ isOpen, onClose, audiobookId }: ViewPost
         <Dialog open={isOpen} onOpenChange={onClose}>
             <DialogContent className="w-[1500px] max-w-[95vw] overflow-hidden p-0">
                 <div className="flex h-[85vh]">
-                    {/* Left: Cover Image */}
-                    <div className="w-1/2 bg-black">
-                        <img src={`/storage/${audiobook.cover_image}`} alt={audiobook.title} className="h-full w-full object-contain" />
+                    {/* Left: Cover Image Carousel */}
+                    <div className="relative w-1/2 bg-black">
+                        {audiobook.cover_image && audiobook.cover_image.length > 0 && (
+                            <>
+                                <img
+                                    src={`/storage/${audiobook.cover_image[currentImageIndex]}`}
+                                    alt={`${audiobook.title} - Image ${currentImageIndex + 1}`}
+                                    className="h-full w-full object-contain"
+                                />
+
+                                {/* Navigation Buttons */}
+                                {audiobook.cover_image.length > 1 && (
+                                    <>
+                                        <button
+                                            onClick={previousImage}
+                                            className="absolute top-1/2 left-4 -translate-y-1/2 rounded-full bg-black/50 p-2 text-white hover:bg-black/70"
+                                        >
+                                            <ChevronLeft className="h-6 w-6" />
+                                        </button>
+                                        <button
+                                            onClick={nextImage}
+                                            className="absolute top-1/2 right-4 -translate-y-1/2 rounded-full bg-black/50 p-2 text-white hover:bg-black/70"
+                                        >
+                                            <ChevronRight className="h-6 w-6" />
+                                        </button>
+
+                                        {/* Image Counter */}
+                                        <div className="absolute bottom-4 left-1/2 -translate-x-1/2 rounded-full bg-black/50 px-3 py-1 text-sm text-white">
+                                            {currentImageIndex + 1} / {audiobook.cover_image.length}
+                                        </div>
+                                    </>
+                                )}
+                            </>
+                        )}
                     </div>
 
                     {/* Right: Details */}

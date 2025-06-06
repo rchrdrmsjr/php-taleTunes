@@ -101,6 +101,19 @@ const recommendations = [
     },
 ];
 
+// Helper function to get first cover image
+const getFirstCoverImage = (coverImage: string | string[]): string => {
+    if (Array.isArray(coverImage)) {
+        return coverImage[0] || '';
+    }
+    try {
+        const parsed = JSON.parse(coverImage);
+        return Array.isArray(parsed) ? parsed[0] || '' : coverImage;
+    } catch {
+        return coverImage;
+    }
+};
+
 export default function Dashboard() {
     const itemsPerBatch = 4;
     const [selectedAudiobookId, setSelectedAudiobookId] = useState<number | null>(null);
@@ -231,7 +244,7 @@ export default function Dashboard() {
                                         <AudiobookCard
                                             title={book.title}
                                             author={book.user?.name || 'Unknown'}
-                                            coverImage={book.cover_image ? `/storage/${book.cover_image}` : ''}
+                                            coverImage={book.cover_image ? `/storage/${getFirstCoverImage(book.cover_image)}` : ''}
                                             description={book.description}
                                         />
                                     </div>
@@ -304,7 +317,7 @@ export default function Dashboard() {
                                         <HorizontalAudiobookCard
                                             title={work.title}
                                             author={work.user?.name || 'You'}
-                                            coverImage={work.cover_image ? `/storage/${work.cover_image}` : ''}
+                                            coverImage={work.cover_image ? `/storage/${getFirstCoverImage(work.cover_image)}` : ''}
                                             description={work.description}
                                         />
                                     </div>
@@ -372,7 +385,7 @@ export default function Dashboard() {
                                         <AudiobookCard
                                             title={book.title}
                                             author={book.user?.name || 'Unknown'}
-                                            coverImage={book.cover_image ? `/storage/${book.cover_image}` : ''}
+                                            coverImage={book.cover_image ? `/storage/${getFirstCoverImage(book.cover_image)}` : ''}
                                             description={book.description}
                                         />
                                     </div>

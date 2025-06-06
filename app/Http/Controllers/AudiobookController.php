@@ -27,26 +27,62 @@ class AudiobookController extends Controller
             $validated = $request->validate([
                 'title' => 'required|string|max:255',
                 'description' => 'nullable|string|max:2000',
-                'cover_image' => 'required|image|max:2048', // 2MB max
+                'cover_image.*' => 'required|image|mimes:jpeg,jpg,png|max:51200', // 50MB max per image
+                'cover_image' => 'required|array|min:1|max:10', // Max 10 images
                 'audio_file' => 'required|file|mimes:mp3|max:51200', // 50MB max
                 'category' => 'required|string|in:Fiction,Non-fiction,Biography,Children',
                 'is_public' => 'boolean',
+            ], [
+                'cover_image.*.mimes' => 'The cover image must be a file of type: jpeg, jpg, png.',
+                'cover_image.*.max' => 'The cover image may not be greater than 50MB.',
+                'cover_image.required' => 'Please select at least one cover image.',
+                'cover_image.array' => 'The cover image must be an array.',
+                'cover_image.min' => 'Please select at least one cover image.',
+                'cover_image.max' => 'You can upload maximum 10 images.',
             ]);
 
             Log::info('Validation passed', ['validated_data' => $validated]);
 
-            // Store cover image
-            $coverPath = $request->file('cover_image')->store('audiobooks/covers', 'public');
-            Log::info('Cover image stored', ['path' => $coverPath]);
+            // Store cover images
+            $coverPaths = [];
+            foreach ($request->file('cover_image') as $image) {
+                try {
+                    $path = $image->store('audiobooks/covers', 'public');
+                    $coverPaths[] = $path;
+                    Log::info('Cover image stored successfully', [
+                        'path' => $path,
+                        'original_name' => $image->getClientOriginalName(),
+                        'mime_type' => $image->getMimeType(),
+                        'size' => $image->getSize()
+                    ]);
+                } catch (\Exception $e) {
+                    Log::error('Error storing cover image', [
+                        'error' => $e->getMessage(),
+                        'file' => $image->getClientOriginalName(),
+                        'mime_type' => $image->getMimeType(),
+                        'size' => $image->getSize()
+                    ]);
+                    throw new \Exception('Failed to store cover image: ' . $e->getMessage());
+                }
+            }
+            Log::info('Cover images stored', ['paths' => $coverPaths]);
             
             // Store audio file
-            $audioPath = $request->file('audio_file')->store('audiobooks/audio', 'public');
-            Log::info('Audio file stored', ['path' => $audioPath]);
+            try {
+                $audioPath = $request->file('audio_file')->store('audiobooks/audio', 'public');
+                Log::info('Audio file stored', ['path' => $audioPath]);
+            } catch (\Exception $e) {
+                Log::error('Error storing audio file', [
+                    'error' => $e->getMessage(),
+                    'file' => $request->file('audio_file')->getClientOriginalName()
+                ]);
+                throw new \Exception('Failed to store audio file: ' . $e->getMessage());
+            }
 
             $audiobook = Audiobook::create([
                 'title' => $validated['title'],
                 'description' => $validated['description'],
-                'cover_image' => $coverPath,
+                'cover_image' => json_encode($coverPaths),
                 'audio_file' => $audioPath,
                 'category' => $validated['category'],
                 'is_public' => $validated['is_public'],
@@ -63,7 +99,7 @@ class AudiobookController extends Controller
             ]);
 
             return back()->withErrors([
-                'error' => 'Failed to upload audiobook. Please try again.',
+                'error' => 'Failed to upload audiobook: ' . $e->getMessage(),
             ]);
         }
     }
