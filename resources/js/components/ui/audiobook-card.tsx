@@ -20,24 +20,24 @@ export function AudiobookCard({
     return (
         <div
             className={cn(
-                'group relative overflow-hidden bg-white transition-all hover:shadow-lg',
+                'group relative overflow-hiddentransition-all hover:shadow-lg',
                 className
             )}
             {...props}
         >
-            <div className="aspect-[3/4] w-full overflow-hidden">
+            <div className="aspect-[4/4] w-full overflow-hidden">
                 <img
                     src={coverImage}
                     alt={title}
-                    className="h-full w-full object-contain transition-transform duration-300 group-hover:scale-105"
+                    className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
                 />
             </div>
-            <div className="p-4">
-                <h3 className="mb-1 text-lg font-semibold text-gray-900">{title}</h3>
-                <p className="text-sm text-gray-600">{author}</p>
-                {description && (
+            <div>
+                <h3 className="text-lg font-semibold text-gray-900">{title}</h3>
+                <p className="text-sm text-gray-600">by {author}</p>
+                {/* {description && (
                     <p className="mt-2 text-sm text-gray-500 line-clamp-2">{description}</p>
-                )}
+                )} */}
             </div>
         </div>
     );

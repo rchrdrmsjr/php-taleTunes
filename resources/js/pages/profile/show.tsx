@@ -1,15 +1,29 @@
+import ViewPostModal from '@/components/view-post-modal';
 import AppLayout from '@/layouts/app-layout';
 import { Head, Link, usePage } from '@inertiajs/react';
 import { Globe, Lock, Settings } from 'lucide-react';
 import { useState } from 'react';
 // Assuming you have route helper available globally or imported
 
+// Helper function to get first cover image
+const getFirstCoverImage = (coverImage: string | string[]): string => {
+    if (Array.isArray(coverImage)) {
+        return coverImage[0] || '';
+    }
+    try {
+        const parsed = JSON.parse(coverImage);
+        return Array.isArray(parsed) ? parsed[0] || '' : coverImage;
+    } catch {
+        return coverImage;
+    }
+};
+
 // Consider defining a type for audiobook data for better type safety
 interface AudiobookData {
     id: number;
     title: string;
     description: string;
-    cover_image: string | null; // cover_image can be null
+    cover_image: string | string[] | null; // Updated to handle array of images
     // Add other properties as needed, like user if it's nested
     user?: {
         // Optional user relationship if needed for author name elsewhere
@@ -40,11 +54,18 @@ export default function Show({ user, audiobooks }: Props) {
 
     // Tab state: 'public' or 'private'
     const [activeTab, setActiveTab] = useState<'public' | 'private'>('public');
+    const [selectedAudiobookId, setSelectedAudiobookId] = useState<number | null>(null);
+    const [isViewModalOpen, setIsViewModalOpen] = useState(false);
 
     // Filter books based on tab
     const filteredBooks = books.filter((book: AudiobookData) => (activeTab === 'public' ? book.is_public : !book.is_public));
 
     const isOwner = authUser && authUser.id === user.id;
+
+    const handleAudiobookClick = (audiobookId: number) => {
+        setSelectedAudiobookId(audiobookId);
+        setIsViewModalOpen(true);
+    };
 
     return (
         <AppLayout>
@@ -121,10 +142,14 @@ export default function Show({ user, audiobooks }: Props) {
                 <div className="grid grid-cols-2 gap-2 pb-20 sm:grid-cols-3 md:grid-cols-4">
                     {filteredBooks.length > 0 ? (
                         filteredBooks.map((book: AudiobookData) => (
-                            <div key={book.id} className="group relative overflow-hidden rounded-md">
-                                <div className="aspect-[3/4] w-full">
+                            <div
+                                key={book.id}
+                                className="group relative cursor-pointer overflow-hidden"
+                                onClick={() => handleAudiobookClick(book.id)}
+                            >
+                                <div className="aspect-[4/4] w-full">
                                     <img
-                                        src={book.cover_image ? `/storage/${book.cover_image}` : '/images/default-cover.png'}
+                                        src={book.cover_image ? `/storage/${getFirstCoverImage(book.cover_image)}` : '/images/default-cover.png'}
                                         alt={`${book.title} cover`}
                                         className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
                                     />
@@ -137,6 +162,16 @@ export default function Show({ user, audiobooks }: Props) {
                         </div>
                     )}
                 </div>
+
+                {/* View Post Modal */}
+                <ViewPostModal
+                    isOpen={isViewModalOpen}
+                    onClose={() => {
+                        setIsViewModalOpen(false);
+                        setSelectedAudiobookId(null);
+                    }}
+                    audiobookId={selectedAudiobookId}
+                />
             </div>
         </AppLayout>
     );

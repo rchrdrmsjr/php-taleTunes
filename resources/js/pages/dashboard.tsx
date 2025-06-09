@@ -1,4 +1,3 @@
-import { SimpleCarousel } from '@/components/SimpleCarousel';
 import { AudiobookCard } from '@/components/ui/audiobook-card';
 import { HorizontalAudiobookCard } from '@/components/ui/horizontal-audiobook-card';
 import ViewPostModal from '@/components/view-post-modal';
@@ -6,6 +5,12 @@ import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem } from '@/types';
 import { Head, usePage } from '@inertiajs/react';
 import { useEffect, useRef, useState } from 'react';
+import 'swiper/css';
+import 'swiper/css/autoplay';
+import 'swiper/css/navigation';
+import { Autoplay, Navigation } from 'swiper/modules';
+import { Swiper, SwiperSlide } from 'swiper/react';
+import '../../css/swiper.css';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -15,7 +20,33 @@ const breadcrumbs: BreadcrumbItem[] = [
 ];
 
 // Mock data - replace with actual data from your backend
-const heroImages = ['/images/hero1.png', '/images/hero2.png', '/images/hero3.jpg', '/images/hero4.jpg', '/images/hero5.jpg'];
+const heroContent = [
+    {
+        image: '/images/hero1.png',
+        title: 'Be Unique',
+        description: 'Unlock your full potential by listening to amazing audiobooks!',
+    },
+    {
+        image: '/images/hero2.png',
+        title: 'Discover Stories',
+        description: 'Explore a world of captivating narratives and immersive experiences.',
+    },
+    {
+        image: '/images/hero3.jpg',
+        title: 'Learn & Grow',
+        description: 'Expand your knowledge with our carefully curated collection of audiobooks.',
+    },
+    {
+        image: '/images/hero4.jpg',
+        title: 'Share Your Voice',
+        description: 'Create and share your own stories with our global community.',
+    },
+    {
+        image: '/images/hero5.jpg',
+        title: 'Connect & Inspire',
+        description: 'Join a community of storytellers and listeners who share your passion.',
+    },
+];
 
 const josephWorks = [
     {
@@ -114,10 +145,21 @@ const getFirstCoverImage = (coverImage: string | string[]): string => {
     }
 };
 
+// Function to shuffle array
+const shuffleArray = (array: any[]): any[] => {
+    const shuffled = [...array];
+    for (let i = shuffled.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+    }
+    return shuffled;
+};
+
 export default function Dashboard() {
     const itemsPerBatch = 4;
     const [selectedAudiobookId, setSelectedAudiobookId] = useState<number | null>(null);
     const [isViewModalOpen, setIsViewModalOpen] = useState(false);
+    const [shuffledRecommendations, setShuffledRecommendations] = useState<any[]>([]);
 
     const favoritesScrollRef = useRef<HTMLDivElement>(null);
     const recommendationsScrollRef = useRef<HTMLDivElement>(null);
@@ -134,6 +176,13 @@ export default function Dashboard() {
     const userAudiobooks = (usePage().props as any)?.userAudiobooks ?? [];
     const otherAudiobooks = (usePage().props as any)?.otherAudiobooks ?? [];
     const favoriteAudiobooks = (usePage().props as any)?.favoriteAudiobooks ?? [];
+
+    // Shuffle recommendations when component mounts or otherAudiobooks changes
+    useEffect(() => {
+        if (otherAudiobooks && otherAudiobooks.length > 0) {
+            setShuffledRecommendations(shuffleArray(otherAudiobooks));
+        }
+    }, [otherAudiobooks]);
 
     useEffect(() => {
         const favoritesContainer = favoritesScrollRef.current;
@@ -209,230 +258,181 @@ export default function Dashboard() {
     return (
         <AppLayout>
             <Head title="Dashboard" />
-            <div className="flex h-full flex-1 flex-col gap-8 p-4">
+            <div className="flex h-full flex-1 flex-col gap-8">
                 {/* Section 1: Hero Carousel */}
-                <div>
-                    <h1 className="text-3xl font-bold">Be Unique</h1>
-                    <p className="text-xl text-gray-700">Unlock your full potential by listening to amazing audiobooks!</p>
+                <div className="relative px-10">
+                    <section className="h-[400px] w-full overflow-visible">
+                        <Swiper
+                            modules={[Autoplay, Navigation]}
+                            spaceBetween={0}
+                            slidesPerView={1}
+                            loop={true}
+                            navigation={{
+                                nextEl: '.hero-next',
+                                prevEl: '.hero-prev',
+                            }}
+                            autoplay={{
+                                delay: 3000,
+                                disableOnInteraction: false,
+                            }}
+                            className="hero-swiper"
+                        >
+                            {heroContent.map((content) => (
+                                <SwiperSlide key={content.image}>
+                                    <div className="flex h-[400px] w-full flex-col">
+                                        <div className="mb-4 flex flex-1 flex-col justify-center">
+                                            <h1 className="text-4xl font-bold">{content.title}</h1>
+                                            <p className="max-w-2xl text-xl">{content.description}</p>
+                                        </div>
+
+                                        <img src={content.image} alt={content.title} className="h-full w-full bg-gray-600 object-contain" />
+                                    </div>
+                                </SwiperSlide>
+                            ))}
+                        </Swiper>
+                    </section>
+                    <div className="swiper-button-prev hero-prev !h-12 !w-12 !rounded-full !bg-white shadow-2xl hover:!bg-white"></div>
+                    <div className="swiper-button-next hero-next !h-12 !w-12 !rounded-full !bg-white shadow-2xl hover:!bg-white"></div>
                 </div>
-                <section className="relative h-[400px] w-full overflow-hidden">
-                    <SimpleCarousel
-                        items={heroImages.map((image) => (
-                            <div key={image} className="h-[400px] w-full">
-                                <img src={image} alt="Hero" className="h-full w-full object-contain" />
-                            </div>
-                        ))}
-                    />
-                </section>
 
                 {/* Section 2: Favorites */}
-                <section className="space-y-4">
-                    <div className="flex flex-col justify-between gap-2">
-                        <h2 className="text-2xl font-semibold">My Favorites</h2>
-                        <p className="text-gray-600">Joseph's favorite audiobooks fuel his adventures, mysteries, and discoveries!</p>
-                    </div>
-                    <div className="relative">
-                        <div ref={favoritesScrollRef} className="no-scrollbar flex snap-x snap-mandatory space-x-6 overflow-x-auto pb-4">
-                            {favoriteAudiobooks && favoriteAudiobooks.length > 0 ? (
-                                favoriteAudiobooks.map((book: any) => (
-                                    <div
-                                        key={book.id}
-                                        className="audiobook-item flex-shrink-0 cursor-pointer snap-start"
-                                        style={{ width: `calc(25% - 18px)` }}
-                                        onClick={() => handleAudiobookClick(book.id)}
-                                    >
-                                        <AudiobookCard
-                                            title={book.title}
-                                            author={book.user?.name || 'Unknown'}
-                                            coverImage={book.cover_image ? `/storage/${getFirstCoverImage(book.cover_image)}` : ''}
-                                            description={book.description}
-                                        />
-                                    </div>
-                                ))
-                            ) : (
-                                <div className="p-4 text-gray-500">You have not added any favorite audiobooks yet.</div>
-                            )}
-                            <div className="flex-shrink-0" style={{ width: '1px' }}></div>
+                <div className="relative px-10">
+                    <section className="space-y-4">
+                        <div className="flex flex-col justify-between gap-2">
+                            <h2 className="text-2xl font-semibold">My Favorites</h2>
+                            <p className="text-gray-600">Joseph's favorite audiobooks fuel his adventures, mysteries, and discoveries!</p>
                         </div>
-
-                        {/* left button */}
-                        {favoritesCanScrollLeft && (
-                            <button
-                                onClick={() => handlePreviousSlide(favoritesScrollRef)}
-                                className="absolute top-1/2 left-0 z-10 -ml-5 flex h-10 w-10 -translate-y-1/2 transform items-center justify-center rounded-full bg-white/80 shadow-md hover:bg-white focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                        <div className="relative">
+                            <Swiper
+                                modules={[Navigation]}
+                                spaceBetween={24}
+                                slidesPerView={4}
+                                navigation={{
+                                    nextEl: '.favorites-next',
+                                    prevEl: '.favorites-prev',
+                                }}
+                                breakpoints={{
+                                    320: { slidesPerView: 1 },
+                                    640: { slidesPerView: 2 },
+                                    768: { slidesPerView: 3 },
+                                    1024: { slidesPerView: 4 },
+                                }}
+                                className="favorites-swiper"
                             >
-                                <svg
-                                    xmlns="http://www.w3.org/2000/svg"
-                                    className="h-6 w-6 text-gray-700"
-                                    fill="none"
-                                    viewBox="0 0 24 24"
-                                    stroke="currentColor"
-                                    strokeWidth="2"
-                                >
-                                    <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
-                                </svg>
-                            </button>
-                        )}
-
-                        {/* right button */}
-                        {favoritesCanScrollRight && (
-                            <button
-                                onClick={() => handleNextSlide(favoritesScrollRef)}
-                                className="absolute top-1/2 right-0 z-10 -mr-5 flex h-10 w-10 -translate-y-1/2 transform items-center justify-center rounded-full bg-white/80 shadow-md hover:bg-white focus:ring-2 focus:ring-blue-500 focus:outline-none"
-                            >
-                                <svg
-                                    xmlns="http://www.w3.org/2000/svg"
-                                    className="h-6 w-6 text-gray-700"
-                                    fill="none"
-                                    viewBox="0 0 24 24"
-                                    stroke="currentColor"
-                                    strokeWidth="2"
-                                >
-                                    <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
-                                </svg>
-                            </button>
-                        )}
-                    </div>
-                </section>
+                                {favoriteAudiobooks && favoriteAudiobooks.length > 0 ? (
+                                    favoriteAudiobooks.map((book: any) => (
+                                        <SwiperSlide key={book.id}>
+                                            <div className="audiobook-item cursor-pointer" onClick={() => handleAudiobookClick(book.id)}>
+                                                <AudiobookCard
+                                                    title={book.title}
+                                                    author={book.user?.name || 'Unknown'}
+                                                    coverImage={book.cover_image ? `/storage/${getFirstCoverImage(book.cover_image)}` : ''}
+                                                    description={book.description}
+                                                />
+                                            </div>
+                                        </SwiperSlide>
+                                    ))
+                                ) : (
+                                    <div className="p-4 text-gray-500">You have not added any favorite audiobooks yet.</div>
+                                )}
+                            </Swiper>
+                        </div>
+                    </section>
+                    <div className="swiper-button-prev favorites-prev !h-12 !w-12 !rounded-full !bg-white !shadow-md hover:!bg-white"></div>
+                    <div className="swiper-button-next favorites-next !h-12 !w-12 !rounded-full !bg-white !shadow-md hover:!bg-white"></div>
+                </div>
 
                 {/* Section 3: Joseph's Works */}
-                <section className="space-y-4">
-                    <div className="flex flex-col justify-between gap-2">
-                        <h2 className="text-2xl font-semibold">My Works</h2>
-                        <p className="text-gray-600">Explore your creative works and literary contributions</p>
-                    </div>
-                    <div className="relative">
-                        <div
-                            ref={josephWorksScrollRef}
-                            className="no-scrollbar flex snap-x snap-mandatory space-x-6 overflow-x-auto pb-4"
-                            style={{ scrollPaddingLeft: '1rem', scrollPaddingRight: '1rem' }}
-                        >
-                            {userAudiobooks && userAudiobooks.length > 0 ? (
-                                userAudiobooks.map((work: any) => (
-                                    <div
-                                        key={work.id}
-                                        className="audiobook-item w-fit flex-shrink-0 cursor-pointer snap-start"
-                                        onClick={() => handleAudiobookClick(work.id)}
-                                    >
-                                        <HorizontalAudiobookCard
-                                            title={work.title}
-                                            author={work.user?.name || 'You'}
-                                            coverImage={work.cover_image ? `/storage/${getFirstCoverImage(work.cover_image)}` : ''}
-                                            description={work.description}
-                                        />
-                                    </div>
-                                ))
-                            ) : (
-                                <div className="p-4 text-gray-500">You have not published any audiobooks yet.</div>
-                            )}
-                            <div className="flex-shrink-0" style={{ width: '1px' }}></div>
+                <div className="relative px-10">
+                    <section className="">
+                        <div className="flex flex-col justify-between">
+                            <h2 className="text-2xl font-semibold">My Works</h2>
+                            {/* <p className="text-gray-600">Explore your creative works and literary contributions</p> */}
                         </div>
-
-                        {josephWorksCanScrollLeft && (
-                            <button
-                                onClick={() => handlePreviousSlide(josephWorksScrollRef)}
-                                className="absolute top-1/2 left-0 z-10 -ml-5 flex h-10 w-10 -translate-y-1/2 transform items-center justify-center rounded-full bg-white/80 shadow-md hover:bg-white focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                        <div className="relative">
+                            <Swiper
+                                modules={[Navigation]}
+                                spaceBetween={24}
+                                slidesPerView={2}
+                                navigation={{
+                                    nextEl: '.works-next',
+                                    prevEl: '.works-prev',
+                                }}
+                                breakpoints={{
+                                    640: { slidesPerView: 2 },
+                                    1024: { slidesPerView: 2 },
+                                }}
+                                className="joseph-works-swiper"
                             >
-                                <svg
-                                    xmlns="http://www.w3.org/2000/svg"
-                                    className="h-6 w-6 text-gray-700"
-                                    fill="none"
-                                    viewBox="0 0 24 24"
-                                    stroke="currentColor"
-                                    strokeWidth="2"
-                                >
-                                    <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
-                                </svg>
-                            </button>
-                        )}
-
-                        {josephWorksCanScrollRight && (
-                            <button
-                                onClick={() => handleNextSlide(josephWorksScrollRef)}
-                                className="absolute top-1/2 right-0 z-10 -mr-5 flex h-10 w-10 -translate-y-1/2 transform items-center justify-center rounded-full bg-white/80 shadow-md hover:bg-white focus:ring-2 focus:ring-blue-500 focus:outline-none"
-                            >
-                                <svg
-                                    xmlns="http://www.w3.org/2000/svg"
-                                    className="h-6 w-6 text-gray-700"
-                                    fill="none"
-                                    viewBox="0 0 24 24"
-                                    stroke="currentColor"
-                                    strokeWidth="2"
-                                >
-                                    <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
-                                </svg>
-                            </button>
-                        )}
-                    </div>
-                </section>
+                                {userAudiobooks && userAudiobooks.length > 0 ? (
+                                    userAudiobooks.map((work: any) => (
+                                        <SwiperSlide key={work.id}>
+                                            <div className="audiobook-item cursor-pointer" onClick={() => handleAudiobookClick(work.id)}>
+                                                <HorizontalAudiobookCard
+                                                    title={work.title}
+                                                    author={work.user?.name || 'You'}
+                                                    coverImage={work.cover_image ? `/storage/${getFirstCoverImage(work.cover_image)}` : ''}
+                                                    description={work.description}
+                                                />
+                                            </div>
+                                        </SwiperSlide>
+                                    ))
+                                ) : (
+                                    <div className="p-4 text-gray-500">You have not published any audiobooks yet.</div>
+                                )}
+                            </Swiper>
+                        </div>
+                    </section>
+                    <div className="swiper-button-prev works-prev !h-12 !w-12 !rounded-full !bg-white/80 !shadow-md hover:!bg-white"></div>
+                    <div className="swiper-button-next works-next !h-12 !w-12 !rounded-full !bg-white/80 !shadow-md hover:!bg-white"></div>
+                </div>
 
                 {/* Section 4: Recommendations */}
-                <section className="space-y-4">
-                    <div className="flex flex-col justify-between gap-2">
-                        <h2 className="text-2xl font-semibold">Recommendations for You</h2>
-                        <p className="text-gray-600">Discover new audiobooks tailored just for you!</p>
-                    </div>
-                    <div className="relative">
-                        <div ref={recommendationsScrollRef} className="no-scrollbar flex snap-x snap-mandatory space-x-6 overflow-x-auto pb-4">
-                            {otherAudiobooks && otherAudiobooks.length > 0 ? (
-                                otherAudiobooks.map((book: any) => (
-                                    <div
-                                        key={book.id}
-                                        className="audiobook-item flex-shrink-0 cursor-pointer snap-start"
-                                        style={{ width: `calc(25% - 18px)` }}
-                                        onClick={() => handleAudiobookClick(book.id)}
-                                    >
-                                        <AudiobookCard
-                                            title={book.title}
-                                            author={book.user?.name || 'Unknown'}
-                                            coverImage={book.cover_image ? `/storage/${getFirstCoverImage(book.cover_image)}` : ''}
-                                            description={book.description}
-                                        />
-                                    </div>
-                                ))
-                            ) : (
-                                <div className="p-4 text-gray-500">No recommendations available at the moment.</div>
-                            )}
-                            <div className="flex-shrink-0" style={{ width: '1px' }}></div>
+                <div className="relative px-10">
+                    <section className="space-y-4">
+                        <div className="flex flex-col justify-between gap-2">
+                            <h2 className="text-2xl font-semibold">Recommendations for You</h2>
+                            <p className="text-gray-600">Discover new audiobooks tailored just for you!</p>
                         </div>
-
-                        {recommendationsCanScrollLeft && (
-                            <button
-                                onClick={() => handlePreviousSlide(recommendationsScrollRef)}
-                                className="absolute top-1/2 left-0 z-10 -ml-5 flex h-10 w-10 -translate-y-1/2 transform items-center justify-center rounded-full bg-white/80 shadow-md hover:bg-white focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                        <div className="relative">
+                            <Swiper
+                                modules={[Navigation]}
+                                spaceBetween={24}
+                                slidesPerView={4}
+                                navigation={{
+                                    nextEl: '.recommendations-next',
+                                    prevEl: '.recommendations-prev',
+                                }}
+                                breakpoints={{
+                                    320: { slidesPerView: 1 },
+                                    640: { slidesPerView: 2 },
+                                    768: { slidesPerView: 3 },
+                                    1024: { slidesPerView: 4 },
+                                }}
+                                className="recommendations-swiper"
                             >
-                                <svg
-                                    xmlns="http://www.w3.org/2000/svg"
-                                    className="h-6 w-6 text-gray-700"
-                                    fill="none"
-                                    viewBox="0 0 24 24"
-                                    stroke="currentColor"
-                                    strokeWidth="2"
-                                >
-                                    <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
-                                </svg>
-                            </button>
-                        )}
-
-                        {recommendationsCanScrollRight && (
-                            <button
-                                onClick={() => handleNextSlide(recommendationsScrollRef)}
-                                className="absolute top-1/2 right-0 z-10 -mr-5 flex h-10 w-10 -translate-y-1/2 transform items-center justify-center rounded-full bg-white/80 shadow-md hover:bg-white focus:ring-2 focus:ring-blue-500 focus:outline-none"
-                            >
-                                <svg
-                                    xmlns="http://www.w3.org/2000/svg"
-                                    className="h-6 w-6 text-gray-700"
-                                    fill="none"
-                                    viewBox="0 0 24 24"
-                                    stroke="currentColor"
-                                    strokeWidth="2"
-                                >
-                                    <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
-                                </svg>
-                            </button>
-                        )}
-                    </div>
-                </section>
+                                {otherAudiobooks && otherAudiobooks.length > 0 ? (
+                                    otherAudiobooks.map((book: any) => (
+                                        <SwiperSlide key={book.id}>
+                                            <div className="audiobook-item cursor-pointer" onClick={() => handleAudiobookClick(book.id)}>
+                                                <AudiobookCard
+                                                    title={book.title}
+                                                    author={book.user?.name || 'Unknown'}
+                                                    coverImage={book.cover_image ? `/storage/${getFirstCoverImage(book.cover_image)}` : ''}
+                                                    description={book.description}
+                                                />
+                                            </div>
+                                        </SwiperSlide>
+                                    ))
+                                ) : (
+                                    <div className="p-4 text-gray-500">No recommendations available at the moment.</div>
+                                )}
+                            </Swiper>
+                        </div>
+                    </section>
+                    <div className="swiper-button-prev recommendations-prev !h-12 !w-12 !rounded-full !bg-white/80 !shadow-md hover:!bg-white"></div>
+                    <div className="swiper-button-next recommendations-next !h-12 !w-12 !rounded-full !bg-white/80 !shadow-md hover:!bg-white"></div>
+                </div>
 
                 {/* View Post Modal */}
                 <ViewPostModal
