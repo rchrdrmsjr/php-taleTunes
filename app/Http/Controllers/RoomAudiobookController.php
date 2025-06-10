@@ -3,22 +3,42 @@
 namespace App\Http\Controllers;
 
 use App\Models\Audiobook;
+use App\Models\Room;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Log;
 use Inertia\Inertia;
 
-class AudiobookController extends Controller
+class RoomAudiobookController extends Controller
 {
-    public function create()
+    public function index(Room $room)
     {
-        return Inertia::render('upload');
+        // Check if user is a member of the room
+        if (!$room->isMember(auth()->user())) {
+            abort(403);
+        }
+
+        $audiobooks = $room->audiobooks()
+            ->with('user')
+            ->latest()
+            ->get();
+
+        return Inertia::render('rooms/audiobooks/index', [
+            'room' => $room,
+            'audiobooks' => $audiobooks,
+        ]);
     }
 
-    public function store(Request $request)
+    public function store(Request $request, Room $room)
     {
+        // Check if user is a member of the room
+        if (!$room->isMember(auth()->user())) {
+            abort(403);
+        }
+
         try {
-            Log::info('Starting audiobook upload', [
+            Log::info('Starting room audiobook upload', [
+                'room_id' => $room->id,
                 'request_data' => $request->except(['cover_image', 'audio_file']),
                 'has_cover' => $request->hasFile('cover_image'),
                 'has_audio' => $request->hasFile('audio_file'),
@@ -31,7 +51,6 @@ class AudiobookController extends Controller
                 'cover_image' => 'required|array|min:1|max:10', // Max 10 images
                 'audio_file' => 'required|file|mimes:mp3|max:51200', // 50MB max
                 'category' => 'required|string|in:Fiction,Non-fiction,Biography,Children',
-                'is_public' => 'boolean',
             ], [
                 'cover_image.*.mimes' => 'The cover image must be a file of type: jpeg, jpg, png.',
                 'cover_image.*.max' => 'The cover image may not be greater than 50MB.',
@@ -85,15 +104,21 @@ class AudiobookController extends Controller
                 'cover_image' => json_encode($coverPaths),
                 'audio_file' => $audioPath,
                 'category' => $validated['category'],
-                'is_public' => $validated['is_public'],
+                'is_public' => false, // Always false for room audiobooks
                 'user_id' => auth()->id(),
             ]);
 
-            Log::info('Audiobook created', ['audiobook_id' => $audiobook->id]);
+            // Attach the audiobook to the room
+            $room->audiobooks()->attach($audiobook->id);
 
-            return redirect()->back()->with('success', 'Audiobook uploaded successfully!');
+            Log::info('Room audiobook created', [
+                'audiobook_id' => $audiobook->id,
+                'room_id' => $room->id
+            ]);
+
+            return redirect()->back()->with('success', 'Audiobook added to room successfully!');
         } catch (\Exception $e) {
-            Log::error('Error uploading audiobook', [
+            Log::error('Error uploading room audiobook', [
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString(),
             ]);
@@ -104,73 +129,50 @@ class AudiobookController extends Controller
         }
     }
 
-    public function show(Audiobook $audiobook)
+    public function show(Room $room, Audiobook $audiobook)
     {
-        $user = auth()->user();
-
-        // Check if the audiobook is public
-        if ($audiobook->is_public) {
-            return response()->json([
-                'audiobook' => $audiobook->load('user'),
-            ]);
-        }
-
-        // Check if the user owns the audiobook
-        if ($audiobook->user_id === $user->id) {
-            return response()->json([
-                'audiobook' => $audiobook->load('user'),
-            ]);
-        }
-
-        // Check if the audiobook is in any of the user's rooms
-        $userRooms = $user->joinedRooms()->with('audiobooks')->get();
-        foreach ($userRooms as $room) {
-            if ($room->audiobooks->contains($audiobook->id)) {
-                return response()->json([
-                    'audiobook' => $audiobook->load('user'),
-                ]);
-            }
-        }
-
-        // If none of the above conditions are met, deny access
-        abort(403, 'You do not have permission to access this audiobook.');
-    }
-
-    public function toggleFavorite(Audiobook $audiobook)
-    {
-        // Check if the audiobook is public or belongs to the current user
-        if (!$audiobook->is_public && $audiobook->user_id !== auth()->id()) {
+        // Check if user is a member of the room
+        if (!$room->isMember(auth()->user())) {
             abort(403);
         }
 
-        $audiobook->update([
-            'is_favorite' => !$audiobook->is_favorite
-        ]);
+        // Check if audiobook belongs to the room
+        if (!$room->audiobooks()->where('audiobook_id', $audiobook->id)->exists()) {
+            abort(404);
+        }
 
         return response()->json([
-            'success' => true,
-            'is_favorite' => $audiobook->is_favorite
+            'audiobook' => $audiobook->load('user'),
         ]);
     }
 
-    public function all()
+    public function destroy(Room $room, Audiobook $audiobook)
     {
-        // Get all public audiobooks grouped by category
-        $audiobooks = Audiobook::where('is_public', true)
-            ->with('user')
-            ->latest()
-            ->get()
-            ->groupBy('category');
+        // Check if user is the owner of the audiobook or a room moderator
+        if ($audiobook->user_id !== auth()->id() && !$room->isModerator(auth()->user())) {
+            abort(403);
+        }
 
-        // Get unique categories
-        $categories = Audiobook::where('is_public', true)
-            ->distinct()
-            ->pluck('category')
-            ->toArray();
+        // Check if audiobook belongs to the room
+        if (!$room->audiobooks()->where('audiobook_id', $audiobook->id)->exists()) {
+            abort(404);
+        }
 
-        return Inertia::render('audiobooks/all', [
-            'audiobooks' => $audiobooks,
-            'categories' => $categories
-        ]);
+        // Delete the files
+        if ($audiobook->cover_image) {
+            $coverPaths = json_decode($audiobook->cover_image, true);
+            foreach ($coverPaths as $path) {
+                Storage::disk('public')->delete($path);
+            }
+        }
+        if ($audiobook->audio_file) {
+            Storage::disk('public')->delete($audiobook->audio_file);
+        }
+
+        // Detach from room and delete
+        $room->audiobooks()->detach($audiobook->id);
+        $audiobook->delete();
+
+        return redirect()->back()->with('success', 'Audiobook removed from room successfully!');
     }
 } 

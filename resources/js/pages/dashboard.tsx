@@ -433,6 +433,11 @@ export default function Dashboard() {
                     <div className="swiper-button-prev recommendations-prev !h-12 !w-12 !rounded-full !bg-white/80 !shadow-md hover:!bg-white"></div>
                     <div className="swiper-button-next recommendations-next !h-12 !w-12 !rounded-full !bg-white/80 !shadow-md hover:!bg-white"></div>
                 </div>
+                {/* Footer */}
+                <div className=" text-center text-sm text-gray-500">
+                    <p>© 2025 TaleTunes. All rights reserved.</p>
+                    <p>Discover and enjoy a world of audiobooks — anytime, anywhere.</p>
+                </div>
 
                 {/* View Post Modal */}
                 <ViewPostModal

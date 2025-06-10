@@ -19,9 +19,24 @@ import { UserMenuContent } from '@/components/user-menu-content';
 import { useInitials } from '@/hooks/use-initials';
 import { type BreadcrumbItem, type NavItem, type SharedData } from '@/types';
 import { Link, router, usePage } from '@inertiajs/react';
-import { BookOpen, ChevronDown, Folder, Home, LayoutGrid, Menu, Search, Upload, Users } from 'lucide-react'; // Added Upload, ChevronDown, Home, Users
+import {
+    BookAudio,
+    BookOpen,
+    ChevronDown,
+    Folder,
+    FolderHeart,
+    FolderPlus,
+    FolderSearch,
+    Home,
+    LayoutGrid,
+    Menu,
+    Search,
+    Upload,
+} from 'lucide-react'; // Added Upload, ChevronDown, Home, Users
 import AppLogo from './app-logo';
 import AppLogoIcon from './app-logo-icon';
+import CreateRoomModal from './create-room-modal';
+import JoinRoomModal from './join-room-modal';
 
 // --- Your Original Nav Items ---
 const mainNavItemsOriginal: NavItem[] = [
@@ -50,18 +65,9 @@ const rightNavItemsOriginal: NavItem[] = [
 
 // --- New Nav Items for Dropdowns & Mobile ---
 const browseNavItems: NavItem[] = [
-    { title: 'All Categories', href: '/browse/all', icon: LayoutGrid },
-    { title: 'Trending', href: '/browse/trending', icon: Home }, // Example icon
+    { title: 'Home', href: route('dashboard'), icon: Home },
+    { title: 'All audiobooks', href: route('audiobooks.all'), icon: BookAudio },
 ];
-
-const roomNavItems: NavItem[] = [
-    { title: 'My Rooms', href: '/rooms/mine', icon: Users }, // Example icon
-    { title: 'Public Rooms', href: '/rooms/public', icon: Folder },
-    { title: 'Create New Room', href: '/rooms/create', icon: Users /* Replace with appropriate icon */ },
-];
-// --- End New Nav Items ---
-
-const activeItemStyles = 'text-neutral-900 dark:bg-neutral-800 dark:text-neutral-100';
 
 interface AppHeaderProps {
     breadcrumbs?: BreadcrumbItem[];
@@ -73,6 +79,22 @@ export function AppHeader({ breadcrumbs = [] }: AppHeaderProps) {
     const getInitials = useInitials();
     const [isSearchVisible, setIsSearchVisible] = useState(false);
     const [searchTerm, setSearchTerm] = useState('');
+    const [isJoinRoomModalOpen, setIsJoinRoomModalOpen] = useState(false);
+    const [isCreateRoomModalOpen, setIsCreateRoomModalOpen] = useState(false);
+
+    const roomNavItems: NavItem[] = [
+        { title: 'My Rooms', href: '/rooms/mine', icon: FolderHeart },
+        {
+            title: 'Join Room',
+            onClick: () => setIsJoinRoomModalOpen(true),
+            icon: FolderSearch,
+        },
+        {
+            title: 'Create Room',
+            onClick: () => setIsCreateRoomModalOpen(true),
+            icon: FolderPlus,
+        },
+    ];
 
     const toggleSearch = () => {
         setIsSearchVisible(!isSearchVisible);
@@ -134,31 +156,53 @@ export function AppHeader({ breadcrumbs = [] }: AppHeaderProps) {
                                     {/* Mobile Browse */}
                                     <div className="space-y-2">
                                         <h3 className="px-1 text-sm font-medium text-neutral-600 dark:text-neutral-400">Browse</h3>
-                                        {browseNavItems.map((item) => (
-                                            <Link
-                                                key={item.title}
-                                                href={item.href}
-                                                className="flex items-center space-x-3 rounded-md p-2 font-medium hover:bg-neutral-100 dark:hover:bg-neutral-800"
-                                            >
-                                                {item.icon && <Icon iconNode={item.icon} className="h-5 w-5" />}
-                                                <span>{item.title}</span>
-                                            </Link>
-                                        ))}
+                                        {browseNavItems.map((item) =>
+                                            item.href ? (
+                                                <Link
+                                                    key={item.title}
+                                                    href={item.href}
+                                                    className="flex items-center space-x-3 rounded-md p-2 font-medium hover:bg-neutral-100 dark:hover:bg-neutral-800"
+                                                >
+                                                    {item.icon && <Icon iconNode={item.icon} className="h-5 w-5" />}
+                                                    <span>{item.title}</span>
+                                                </Link>
+                                            ) : (
+                                                <button
+                                                    key={item.title}
+                                                    onClick={item.onClick}
+                                                    className="flex w-full items-center space-x-3 rounded-md p-2 font-medium hover:bg-neutral-100 dark:hover:bg-neutral-800"
+                                                >
+                                                    {item.icon && <Icon iconNode={item.icon} className="h-5 w-5" />}
+                                                    <span>{item.title}</span>
+                                                </button>
+                                            ),
+                                        )}
                                     </div>
 
                                     {/* Mobile Rooms */}
                                     <div className="space-y-2">
                                         <h3 className="px-1 text-sm font-medium text-neutral-600 dark:text-neutral-400">Rooms</h3>
-                                        {roomNavItems.map((item) => (
-                                            <Link
-                                                key={item.title}
-                                                href={item.href}
-                                                className="flex items-center space-x-3 rounded-md p-2 font-medium hover:bg-neutral-100 dark:hover:bg-neutral-800"
-                                            >
-                                                {item.icon && <Icon iconNode={item.icon} className="h-5 w-5" />}
-                                                <span>{item.title}</span>
-                                            </Link>
-                                        ))}
+                                        {roomNavItems.map((item) =>
+                                            item.href ? (
+                                                <Link
+                                                    key={item.title}
+                                                    href={item.href}
+                                                    className="flex items-center space-x-3 rounded-md p-2 font-medium hover:bg-neutral-100 dark:hover:bg-neutral-800"
+                                                >
+                                                    {item.icon && <Icon iconNode={item.icon} className="h-5 w-5" />}
+                                                    <span>{item.title}</span>
+                                                </Link>
+                                            ) : (
+                                                <button
+                                                    key={item.title}
+                                                    onClick={item.onClick}
+                                                    className="flex w-full items-center space-x-3 rounded-md p-2 font-medium hover:bg-neutral-100 dark:hover:bg-neutral-800"
+                                                >
+                                                    {item.icon && <Icon iconNode={item.icon} className="h-5 w-5" />}
+                                                    <span>{item.title}</span>
+                                                </button>
+                                            ),
+                                        )}
                                     </div>
 
                                     {/* Mobile Upload Button */}
@@ -172,16 +216,27 @@ export function AppHeader({ breadcrumbs = [] }: AppHeaderProps) {
                                     {/* Original Main Nav Items (if needed) */}
                                     <div className="space-y-2">
                                         <h3 className="px-1 text-sm font-medium text-neutral-600 dark:text-neutral-400">Main</h3>
-                                        {mainNavItemsOriginal.map((item) => (
-                                            <Link
-                                                key={item.title}
-                                                href={item.href}
-                                                className="flex items-center space-x-3 rounded-md p-2 font-medium hover:bg-neutral-100 dark:hover:bg-neutral-800"
-                                            >
-                                                {item.icon && <Icon iconNode={item.icon} className="h-5 w-5" />}
-                                                <span>{item.title}</span>
-                                            </Link>
-                                        ))}
+                                        {mainNavItemsOriginal.map((item) =>
+                                            item.href ? (
+                                                <Link
+                                                    key={item.title}
+                                                    href={item.href}
+                                                    className="flex items-center space-x-3 rounded-md p-2 font-medium hover:bg-neutral-100 dark:hover:bg-neutral-800"
+                                                >
+                                                    {item.icon && <Icon iconNode={item.icon} className="h-5 w-5" />}
+                                                    <span>{item.title}</span>
+                                                </Link>
+                                            ) : (
+                                                <button
+                                                    key={item.title}
+                                                    onClick={item.onClick}
+                                                    className="flex w-full items-center space-x-3 rounded-md p-2 font-medium hover:bg-neutral-100 dark:hover:bg-neutral-800"
+                                                >
+                                                    {item.icon && <Icon iconNode={item.icon} className="h-5 w-5" />}
+                                                    <span>{item.title}</span>
+                                                </button>
+                                            ),
+                                        )}
                                     </div>
                                 </div>
                                 {/* Footer for external links in mobile */}
@@ -189,7 +244,7 @@ export function AppHeader({ breadcrumbs = [] }: AppHeaderProps) {
                                     {rightNavItemsOriginal.map((item) => (
                                         <a
                                             key={item.title}
-                                            href={item.href}
+                                            href={item.href || '#'}
                                             target="_blank"
                                             rel="noopener noreferrer"
                                             className="flex items-center space-x-3 rounded-md p-2 text-sm font-medium hover:bg-neutral-100 dark:hover:bg-neutral-800"
@@ -215,17 +270,24 @@ export function AppHeader({ breadcrumbs = [] }: AppHeaderProps) {
                         {/* Browse Dropdown */}
                         <DropdownMenu>
                             <DropdownMenuTrigger asChild>
-                                <Button variant="ghost" className="h-9 px-3 text-sm font-medium">
+                                <Button variant="ghost" className="h-9 px-3 text-sm font-bold">
                                     Browse <ChevronDown className="ml-1 h-4 w-4" />
                                 </Button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="start">
                                 {browseNavItems.map((item) => (
                                     <DropdownMenuItem key={item.title} asChild>
-                                        <Link href={item.href} className="flex items-center space-x-2">
-                                            {item.icon && <Icon iconNode={item.icon} className="mr-2 h-4 w-4" />}
-                                            <span>{item.title}</span>
-                                        </Link>
+                                        {item.href ? (
+                                            <Link href={item.href} className="flex items-center space-x-2">
+                                                {item.icon && <Icon iconNode={item.icon} className="mr-2 h-4 w-4" />}
+                                                <span>{item.title}</span>
+                                            </Link>
+                                        ) : (
+                                            <button onClick={item.onClick} className="flex w-full items-center space-x-2 px-2 py-1.5 text-sm">
+                                                {item.icon && <Icon iconNode={item.icon} className="mr-2 h-4 w-4" />}
+                                                <span>{item.title}</span>
+                                            </button>
+                                        )}
                                     </DropdownMenuItem>
                                 ))}
                             </DropdownMenuContent>
@@ -233,17 +295,24 @@ export function AppHeader({ breadcrumbs = [] }: AppHeaderProps) {
                         {/* Room Dropdown */}
                         <DropdownMenu>
                             <DropdownMenuTrigger asChild>
-                                <Button variant="ghost" className="h-9 px-3 text-sm font-medium">
+                                <Button variant="ghost" className="h-9 px-3 text-sm font-bold">
                                     Rooms <ChevronDown className="ml-1 h-4 w-4" />
                                 </Button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="start">
                                 {roomNavItems.map((item) => (
                                     <DropdownMenuItem key={item.title} asChild>
-                                        <Link href={item.href} className="flex items-center space-x-2">
-                                            {item.icon && <Icon iconNode={item.icon} className="mr-2 h-4 w-4" />}
-                                            <span>{item.title}</span>
-                                        </Link>
+                                        {item.href ? (
+                                            <Link href={item.href} className="flex items-center space-x-2">
+                                                {item.icon && <Icon iconNode={item.icon} className="mr-2 h-4 w-4" />}
+                                                <span>{item.title}</span>
+                                            </Link>
+                                        ) : (
+                                            <button onClick={item.onClick} className="flex w-full items-center space-x-2 px-2 py-1.5 text-sm">
+                                                {item.icon && <Icon iconNode={item.icon} className="mr-2 h-4 w-4" />}
+                                                <span>{item.title}</span>
+                                            </button>
+                                        )}
                                     </DropdownMenuItem>
                                 ))}
                             </DropdownMenuContent>
@@ -346,6 +415,10 @@ export function AppHeader({ breadcrumbs = [] }: AppHeaderProps) {
                     </div>
                 </div>
             )}
+
+            {/* Add modals */}
+            <JoinRoomModal isOpen={isJoinRoomModalOpen} onClose={() => setIsJoinRoomModalOpen(false)} />
+            <CreateRoomModal isOpen={isCreateRoomModalOpen} onClose={() => setIsCreateRoomModalOpen(false)} />
         </>
     );
 }

@@ -50,4 +50,16 @@ class User extends Authenticatable
             'password' => 'hashed',
         ];
     }
+
+    public function ownedRooms()
+    {
+        return $this->hasMany(Room::class, 'owner_id');
+    }
+
+    public function joinedRooms()
+    {
+        return $this->belongsToMany(Room::class)
+            ->withPivot('role', 'joined_at')
+            ->withTimestamps();
+    }
 }
