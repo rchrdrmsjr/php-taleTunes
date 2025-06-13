@@ -24,10 +24,7 @@ class DashboardController extends Controller
             ->get();    
 
         // get the current user's favorite audiobooks
-        $favoriteAudiobooks = Audiobook::where('user_id', $user->id)
-            ->where('is_favorite', true)
-            ->with('user')
-            ->get();
+        $favoriteAudiobooks = $user->favoriteAudiobooks()->with('user')->get();
 
         return Inertia::render('dashboard', [
             'userAudiobooks' => $audiobooks,

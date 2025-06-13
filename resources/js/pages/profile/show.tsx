@@ -1,4 +1,6 @@
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import ViewPostModal from '@/components/view-post-modal';
+import { useInitials } from '@/hooks/use-initials';
 import AppLayout from '@/layouts/app-layout';
 import { Head, Link, usePage } from '@inertiajs/react';
 import { Globe, Lock, Settings } from 'lucide-react';
@@ -43,12 +45,14 @@ interface UserData {
 interface Props {
     user: UserData; // Use UserData type
     audiobooks: AudiobookData[]; // Use AudiobookData type
+    roomCount: number;
+    favoritesCount: number;
 }
 
-export default function Show({ user, audiobooks }: Props) {
-    // If props are not passed directly, fallback to usePage
+export default function Show({ user, audiobooks, roomCount, favoritesCount }: Props) {
     const page = usePage();
     const authUser = (page.props as any)?.auth?.user;
+    const getInitials = useInitials();
     // Use the passed audiobooks prop if available, otherwise fallback
     const books = audiobooks ?? (page.props as any).audiobooks ?? [];
 
@@ -76,7 +80,12 @@ export default function Show({ user, audiobooks }: Props) {
                     <div className="flex flex-col items-center gap-2">
                         {/* Avatar */}
                         <div className="relative flex h-16 w-16 items-center justify-center overflow-hidden rounded-full bg-gray-200 shadow-inner dark:bg-neutral-800">
-                            <p className="text-2xl dark:text-white">{user.name.charAt(0).toUpperCase()}</p>
+                            <Avatar className="size-8 overflow-hidden rounded-full">
+                                {authUser?.avatar && <AvatarImage src={authUser.avatar} alt={authUser.name} />}
+                                <AvatarFallback className="rounded-lg bg-neutral-200 text-black dark:bg-neutral-700 dark:text-white">
+                                    {getInitials(authUser?.name)}
+                                </AvatarFallback>
+                            </Avatar>
                         </div>
 
                         {/* Name + Settings in one row */}
@@ -100,10 +109,9 @@ export default function Show({ user, audiobooks }: Props) {
                 {/* Stats */}
                 <div className="mt-8 flex justify-center gap-10 text-center">
                     {[
-                        // You might need to fetch these values if they are not in the `user` prop
-                        { label: 'Favourites', value: 0 }, // Placeholder
+                        { label: 'Favourites', value: favoritesCount },
                         { label: 'Work', value: books.length },
-                        { label: 'Room', value: 0 }, // Placeholder
+                        { label: 'Room', value: roomCount },
                     ].map((stat) => (
                         <div key={stat.label}>
                             <div className="text-xl font-semibold text-gray-800 dark:text-white">{stat.value}</div>

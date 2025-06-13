@@ -17,6 +17,8 @@ export interface SharedData {
             name: string;
             email: string;
             avatar?: string;
+            created_at?: string;
+            updated_at?: string;
         } | null;
     };
     [key: string]: any;
@@ -45,8 +47,8 @@ export interface User {
     id: number;
     name: string;
     email: string;
-    created_at: string;
-    updated_at: string;
+    created_at?: string;
+    updated_at?: string;
 }
 
 export interface Room {
@@ -66,7 +68,7 @@ export interface Audiobook {
     description: string | null;
     cover_image: string; // JSON string of image paths
     audio_file: string;
-    category: 'Fiction' | 'Non-fiction' | 'Biography' | 'Children';
+    category: 'Fantasy' | 'Romance' | 'Motivation' | 'Horror' | 'Non-Fiction' | 'Memoir' | 'Science Fiction' | 'Mystery' | 'Historical Fiction';
     is_public: boolean;
     created_at: string;
     updated_at: string;

@@ -8,6 +8,7 @@ use App\Http\Controllers\ProfileController;
 use App\Models\Audiobook;
 use App\Http\Controllers\RoomController;
 use App\Http\Controllers\RoomAudiobookController;
+use App\Http\Controllers\CommentController;
 
 
 Route::get('/', function () {
@@ -40,6 +41,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('/rooms/{room}/audiobooks', [RoomAudiobookController::class, 'store'])->name('rooms.audiobooks.store');
     Route::get('/rooms/{room}/audiobooks/{audiobook}', [RoomAudiobookController::class, 'show'])->name('rooms.audiobooks.show');
     Route::delete('/rooms/{room}/audiobooks/{audiobook}', [RoomAudiobookController::class, 'destroy'])->name('rooms.audiobooks.destroy');
+
+    // Comment routes
+    Route::post('/comments', [CommentController::class, 'store'])->name('comments.store');
+    Route::delete('/comments/{comment}', [CommentController::class, 'destroy'])->name('comments.destroy');
 });
 
 Route::get('profile/{username}', [ProfileController::class, 'show'])->name('profile.public');

@@ -39,7 +39,7 @@ export const HorizontalAudiobookCard: FC<HorizontalAudiobookCardProps> = ({
       <div className="flex flex-col  py-6 px-4 text-sm leading-[1.25rem] flex-1 min-w-0">
         <div>
           <h3 className="text-lg font-semibold text-gray-900 truncate">{title}</h3>
-          <p className="text-gray-600">by {author}</p>
+          <p className="text-gray-600">{author}</p>
         </div>
 
         <p className="mt-2 text-gray-700 line-clamp-5">

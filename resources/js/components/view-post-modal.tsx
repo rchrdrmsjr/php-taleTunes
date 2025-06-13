@@ -1,7 +1,10 @@
 import { Button } from '@/components/ui/button';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Dialog, DialogContent } from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import { type SharedData } from '@/types';
+import { usePage } from '@inertiajs/react';
 import axios from 'axios';
-import { ChevronLeft, ChevronRight, Heart, Pause, Play } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Download, Heart, Pause, Play } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
 interface Audiobook {
@@ -12,12 +15,26 @@ interface Audiobook {
     audio_file: string;
     category: string;
     is_public: boolean;
-    is_favorite: boolean;
+    author: string;
     user: {
         id: number;
         name: string;
-        username: string;
+        avatar: string;
     };
+    duration?: string;
+    favorited_by?: Array<{
+        id: number;
+    }>;
+    comments?: Array<{
+        id: number;
+        content: string;
+        user: {
+            id: number;
+            name: string;
+            avatar: string;
+        };
+        created_at: string;
+    }>;
 }
 
 interface ViewPostModalProps {
@@ -26,12 +43,15 @@ interface ViewPostModalProps {
     audiobookId: number | null;
 }
 
-export default function ViewPostModal({ isOpen, onClose, audiobookId }: ViewPostModalProps) {
+const ViewPostModal = ({ isOpen, onClose, audiobookId }: ViewPostModalProps) => {
+    const { auth } = usePage<SharedData>().props;
     const [audiobook, setAudiobook] = useState<Audiobook | null>(null);
     const [isPlaying, setIsPlaying] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
     const [currentImageIndex, setCurrentImageIndex] = useState(0);
+    const [comment, setComment] = useState('');
     const [audio] = useState(new Audio());
+    const [isFavorited, setIsFavorited] = useState(false);
 
     // Helper function to get cover images
     const getCoverImages = (coverImage: string | string[]): string[] => {
@@ -61,6 +81,15 @@ export default function ViewPostModal({ isOpen, onClose, audiobookId }: ViewPost
         };
     }, []);
 
+    useEffect(() => {
+        if (!audiobook || !auth.user) {
+            setIsFavorited(false);
+            return;
+        }
+        const favorited = audiobook.favorited_by?.some((user) => user.id === auth.user!.id) ?? false;
+        setIsFavorited(favorited);
+    }, [audiobook, auth.user]);
+
     const fetchAudiobook = async () => {
         try {
             setIsLoading(true);
@@ -69,6 +98,13 @@ export default function ViewPostModal({ isOpen, onClose, audiobookId }: ViewPost
             // Ensure cover_image is properly handled
             data.cover_image = getCoverImages(data.cover_image);
             setAudiobook(data);
+            // Update isFavorited state based on the fetched data
+            if (auth.user) {
+                const favorited = data.favorited_by?.some((user: { id: number }) => user.id === auth.user!.id) ?? false;
+                setIsFavorited(favorited);
+            } else {
+                setIsFavorited(false);
+            }
             setCurrentImageIndex(0);
         } catch (error) {
             console.error('Error fetching audiobook:', error);
@@ -90,11 +126,37 @@ export default function ViewPostModal({ isOpen, onClose, audiobookId }: ViewPost
     };
 
     const toggleFavorite = async () => {
-        if (!audiobook) return;
+        if (!audiobook || !auth.user) return;
+
+        const userId = auth.user.id;
 
         try {
-            await axios.post(route('audiobooks.toggle-favorite', { audiobook: audiobook.id }));
-            setAudiobook((prev) => (prev ? { ...prev, is_favorite: !prev.is_favorite } : null));
+            const response = await axios.post(
+                route('audiobooks.toggle-favorite', { audiobook: audiobook.id }),
+                {},
+                {
+                    headers: {
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
+                    },
+                },
+            );
+
+            // Update the audiobook state with the new favorite status
+            setAudiobook((prev) => {
+                if (!prev) return null;
+                const isCurrentlyFavorited = prev.favorited_by?.some((user) => user.id === userId) ?? false;
+                const updatedFavoritedBy = isCurrentlyFavorited
+                    ? prev.favorited_by?.filter((user) => user.id !== userId) || []
+                    : [...(prev.favorited_by || []), { id: userId }];
+
+                return {
+                    ...prev,
+                    favorited_by: updatedFavoritedBy,
+                };
+            });
+
+            // Force a re-render by updating the isFavorited state
+            setIsFavorited((prev) => !prev);
         } catch (error) {
             console.error('Error toggling favorite:', error);
         }
@@ -108,6 +170,23 @@ export default function ViewPostModal({ isOpen, onClose, audiobookId }: ViewPost
     const previousImage = () => {
         if (!audiobook) return;
         setCurrentImageIndex((prev) => (prev - 1 + audiobook.cover_image.length) % audiobook.cover_image.length);
+    };
+
+    const handleCommentSubmit = async () => {
+        if (!audiobook || !comment.trim()) return;
+        try {
+            const response = await axios.post(`/comments`, {
+                audiobook_id: audiobook.id,
+                content: comment,
+            });
+            setAudiobook({
+                ...audiobook,
+                comments: [...(audiobook.comments || []), response.data],
+            });
+            setComment('');
+        } catch (error) {
+            console.error('Error posting comment:', error);
+        }
     };
 
     if (!audiobook) {
@@ -155,61 +234,106 @@ export default function ViewPostModal({ isOpen, onClose, audiobookId }: ViewPost
                     </div>
 
                     {/* Right: Details */}
-                    <div className="w-1/2 overflow-y-auto p-8">
-                        <DialogHeader>
-                            <DialogTitle className="mb-2 text-3xl font-bold">{audiobook.title}</DialogTitle>
-                        </DialogHeader>
-
-                        <div className="space-y-4">
-                            <div>
-                                <h3 className="text-lg font-semibold">Author</h3>
-                                <p className="text-gray-600">{audiobook.user.name}</p>
+                    <div className="w-1/2 overflow-y-auto">
+                        {/* Div 1: Cover Image and Actions */}
+                        <div className="flex items-start gap-4 border-b border-gray-400 p-4">
+                            <img
+                                src={`/storage/${audiobook.cover_image[currentImageIndex]}`}
+                                alt={audiobook.title}
+                                className="h-10 w-10 object-cover"
+                            />
+                            <h1 className="mt-1 text-lg font-bold">{audiobook.title}</h1>
+                            <div className="mt-2 flex flex-1 flex-col">
+                                <p className="text-sm text-gray-600">by {audiobook.author}</p>
                             </div>
-
-                            <div>
-                                <h3 className="text-lg font-semibold">Category</h3>
-                                <p className="text-gray-600">{audiobook.category}</p>
-                            </div>
-
-                            <div>
-                                <h3 className="text-lg font-semibold">Description</h3>
-                                <p className="whitespace-pre-line text-gray-600">{audiobook.description}</p>
-                            </div>
-                        </div>
-
-                        {/* Audio Controls */}
-                        <div className="sticky bottom-0 mt-6 bg-white pt-4 pb-2">
-                            <div className="flex items-center gap-4">
-                                <Button
-                                    onClick={togglePlay}
-                                    className="flex items-center gap-2 rounded-full bg-blue-800 px-6 py-2 text-white hover:bg-blue-900"
-                                >
-                                    {isPlaying ? (
-                                        <>
-                                            <Pause className="h-5 w-5" />
-                                            Pause
-                                        </>
-                                    ) : (
-                                        <>
-                                            <Play className="h-5 w-5" />
-                                            Play
-                                        </>
-                                    )}
-                                </Button>
-
+                            <div className="mt-2 flex gap-2">
                                 <Button
                                     onClick={toggleFavorite}
                                     variant="ghost"
-                                    className={`flex items-center gap-2 rounded-full ${audiobook.is_favorite ? 'text-red-500' : 'text-gray-500'}`}
+                                    className={`flex items-center gap-2 ${isFavorited ? 'text-red-500' : 'text-black'}`}
                                 >
-                                    <Heart className={`h-5 w-5 ${audiobook.is_favorite ? 'fill-current' : ''}`} />
-                                    {audiobook.is_favorite ? 'Remove from Favorites' : 'Add to Favorites'}
+                                    <Heart className={`h-5 w-5 ${isFavorited ? 'fill-current' : ''}`} />
+                                </Button>
+                                <Button variant="ghost" className="">
+                                    <Download className="h-5 w-5" />
+                                </Button>
+                                <Button variant="ghost" className="rounded-full bg-blue-800 text-white">
+                                    EDIT
                                 </Button>
                             </div>
+                        </div>
+
+                        {/* Div 2: User Info and Description */}
+                        <div className="flex items-start gap-4 border-b border-gray-400 p-4">
+                            <img src={audiobook.user.avatar} alt={audiobook.user.name} className="h-10 w-10 rounded-full" />
+                            <div>
+                                <p className="mt-2 font-medium">{audiobook.user.name}</p>
+                                <p className="mt-2 text-gray-600">{audiobook.description}</p>
+                            </div>
+                        </div>
+
+                        {/* Div 3: Audio Player */}
+                        <div className="flex items-center gap-4 border-b border-gray-400 p-4">
+                            <Button onClick={togglePlay} variant="ghost" className="h-12 w-12 rounded-full hover:bg-gray-200">
+                                {isPlaying ? <Pause className="h-8 w-8" /> : <Play className="h-8 w-8" />}
+                            </Button>
+
+                            {/* Main container with justify-between and full width */}
+                            <div className="flex w-full items-center justify-between">
+                                {/* Title & Author */}
+                                <div className="flex flex-col">
+                                    <p className="text-lg font-bold">{audiobook.title}</p>
+                                    <p className="text-sm text-gray-600">by {audiobook.author}</p>
+                                </div>
+
+                                {/* Duration */}
+                                <div className="text-sm">{audiobook.duration}</div>
+                            </div>
+                        </div>
+
+                        {/* Div 4: Comments */}
+                        <div className="space-y-4 border-b border-gray-400 p-4">
+                            <h3 className="font-medium">Comments</h3>
+                            {audiobook.comments?.map((comment) => (
+                                <div key={comment.id} className="flex gap-4">
+                                    <img src={comment.user.avatar} alt={comment.user.name} className="h-8 w-8 rounded-full" />
+                                    <div className="rounded-md bg-gray-200 p-2">
+                                        <p className="font-bold">{comment.user.name}</p>
+                                        <p className="">{comment.content}</p>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+
+                        {/* Div 5: Add Comment */}
+                        <div className="flex items-center gap-4 p-4">
+                            {auth.user && (
+                                <>
+                                    <img src={auth.user.avatar} alt={auth.user.name} className="h-8 w-8 rounded-full" />
+                                    <Input
+                                        type="text"
+                                        value={comment}
+                                        onChange={(e) => setComment(e.target.value)}
+                                        onKeyDown={(e) => {
+                                            if (e.key === 'Enter' && !e.shiftKey) {
+                                                e.preventDefault();
+                                                handleCommentSubmit();
+                                            }
+                                        }}
+                                        placeholder="Add a comment..."
+                                        className="flex-1"
+                                    />
+                                    <Button className="bg-blue-800" onClick={handleCommentSubmit}>
+                                        Post
+                                    </Button>
+                                </>
+                            )}
                         </div>
                     </div>
                 </div>
             </DialogContent>
         </Dialog>
     );
-}
+};
+
+export default ViewPostModal;

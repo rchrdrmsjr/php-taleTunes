@@ -37,6 +37,7 @@ export default function RoomAudiobookUploadModal({ isOpen, onClose, roomId }: Ro
         audio_file: null,
         category: '',
         is_public: false, // Always false for room audiobooks
+        author: '', // Add author field
     });
 
     const handleCoverChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -66,6 +67,25 @@ export default function RoomAudiobookUploadModal({ isOpen, onClose, roomId }: Ro
         }
     };
 
+    const handleRemoveCoverImage = (indexToRemove: number) => {
+        // Remove from coverPreview state
+        setCoverPreview((prevPreviews) => prevPreviews.filter((_, index) => index !== indexToRemove));
+
+        // Remove from form data (data.cover_image)
+        setData((prevData) => {
+            if (prevData.cover_image) {
+                const newCoverImages = Array.from(prevData.cover_image).filter((_, index) => index !== indexToRemove);
+                return { ...prevData, cover_image: newCoverImages.length > 0 ? newCoverImages : null };
+            }
+            return prevData;
+        });
+
+        // If no images are left, clear the file input as well
+        if (coverPreview.length === 1 && coverInputRef.current) {
+            coverInputRef.current.value = '';
+        }
+    };
+
     const clearAllFields = () => {
         reset();
         setCategory('');
@@ -84,6 +104,7 @@ export default function RoomAudiobookUploadModal({ isOpen, onClose, roomId }: Ro
         formData.append('category', data.category);
         formData.append('is_public', 'false'); // Always false for room audiobooks
         formData.append('room_id', roomId.toString());
+        formData.append('author', data.author as string); // Add type assertion
 
         if (data.cover_image) {
             Array.from(data.cover_image).forEach((file) => {
@@ -95,7 +116,7 @@ export default function RoomAudiobookUploadModal({ isOpen, onClose, roomId }: Ro
         }
 
         // Validate required fields
-        if (!data.title || !data.cover_image || !data.audio_file || !data.category) {
+        if (!data.title || !data.cover_image || !data.audio_file || !data.category || !data.author) {
             toast.error('Please fill in all required fields');
             return;
         }
@@ -149,18 +170,30 @@ export default function RoomAudiobookUploadModal({ isOpen, onClose, roomId }: Ro
                             <div className="md:col-span-1">
                                 <div className="flex flex-col items-center justify-center rounded-lg border-2 border-dashed border-gray-300 bg-gray-50 p-6">
                                     <div
-                                        className="flex h-40 w-full cursor-pointer flex-col items-center justify-center"
+                                        className="flex w-full cursor-pointer flex-col items-center justify-center"
                                         onClick={() => coverInputRef.current?.click()}
                                     >
                                         {coverPreview.length > 0 ? (
                                             <div className="grid grid-cols-2 gap-2">
                                                 {coverPreview.map((preview, index) => (
-                                                    <img
-                                                        key={index}
-                                                        src={preview}
-                                                        alt={`Cover preview ${index + 1}`}
-                                                        className="h-32 w-full rounded-lg object-cover"
-                                                    />
+                                                    <div key={index} className="relative">
+                                                        <img
+                                                            src={preview}
+                                                            alt={`Cover preview ${index + 1}`}
+                                                            className="h-24 w-full rounded-lg object-cover"
+                                                        />
+                                                        <Button
+                                                            type="button"
+                                                            onClick={(e) => {
+                                                                e.stopPropagation();
+                                                                handleRemoveCoverImage(index);
+                                                            }}
+                                                            className="absolute -top-2 -right-2 flex h-6 w-6 items-center justify-center rounded-full bg-red-500 text-xs font-bold text-white"
+                                                            aria-label={`Remove image ${index + 1}`}
+                                                        >
+                                                            &times;
+                                                        </Button>
+                                                    </div>
                                                 ))}
                                             </div>
                                         ) : (
@@ -197,6 +230,19 @@ export default function RoomAudiobookUploadModal({ isOpen, onClose, roomId }: Ro
                                             onChange={(e) => setData('title', e.target.value)}
                                         />
                                         {errors.title && <p className="mt-1 text-sm text-red-500">{errors.title}</p>}
+                                    </div>
+
+                                    <div>
+                                        <Label htmlFor="author" className="font-bold">
+                                            Author
+                                        </Label>
+                                        <Input
+                                            id="author"
+                                            placeholder="Enter author name"
+                                            value={data.author as string}
+                                            onChange={(e) => setData('author', e.target.value)}
+                                        />
+                                        {errors.author && <p className="mt-1 text-sm text-red-500">{errors.author}</p>}
                                     </div>
 
                                     <div>
@@ -241,39 +287,84 @@ export default function RoomAudiobookUploadModal({ isOpen, onClose, roomId }: Ro
                                                 <DropdownMenuGroup>
                                                     <DropdownMenuItem
                                                         onSelect={() => {
-                                                            setCategory('Fiction');
-                                                            setData('category', 'Fiction');
+                                                            setCategory('Fantasy');
+                                                            setData('category', 'Fantasy');
                                                         }}
                                                     >
                                                         <CheckIcon className="mr-2 h-4 w-4" />
-                                                        Fiction
+                                                        Fantasy
                                                     </DropdownMenuItem>
                                                     <DropdownMenuItem
                                                         onSelect={() => {
-                                                            setCategory('Non-fiction');
-                                                            setData('category', 'Non-fiction');
+                                                            setCategory('Romance');
+                                                            setData('category', 'Romance');
                                                         }}
                                                     >
                                                         <CheckIcon className="mr-2 h-4 w-4" />
-                                                        Non-fiction
+                                                        Romance
                                                     </DropdownMenuItem>
                                                     <DropdownMenuItem
                                                         onSelect={() => {
-                                                            setCategory('Biography');
-                                                            setData('category', 'Biography');
+                                                            setCategory('Motivation');
+                                                            setData('category', 'Motivation');
                                                         }}
                                                     >
                                                         <CheckIcon className="mr-2 h-4 w-4" />
-                                                        Biography
+                                                        Motivation
                                                     </DropdownMenuItem>
                                                     <DropdownMenuItem
                                                         onSelect={() => {
-                                                            setCategory('Children');
-                                                            setData('category', 'Children');
+                                                            setCategory('Horror');
+                                                            setData('category', 'Horror');
                                                         }}
                                                     >
                                                         <CheckIcon className="mr-2 h-4 w-4" />
-                                                        Children
+                                                        Horror
+                                                    </DropdownMenuItem>
+                                                    <DropdownMenuItem
+                                                        onSelect={() => {
+                                                            setCategory('Non-Fiction');
+                                                            setData('category', 'Non-Fiction');
+                                                        }}
+                                                    >
+                                                        <CheckIcon className="mr-2 h-4 w-4" />
+                                                        Non-Fiction
+                                                    </DropdownMenuItem>
+                                                    <DropdownMenuItem
+                                                        onSelect={() => {
+                                                            setCategory('Memoir');
+                                                            setData('category', 'Memoir');
+                                                        }}
+                                                    >
+                                                        <CheckIcon className="mr-2 h-4 w-4" />
+                                                        Memoir
+                                                    </DropdownMenuItem>
+                                                    <DropdownMenuItem
+                                                        onSelect={() => {
+                                                            setCategory('Science Fiction');
+                                                            setData('category', 'Science Fiction');
+                                                        }}
+                                                    >
+                                                        <CheckIcon className="mr-2 h-4 w-4" />
+                                                        Science Fiction
+                                                    </DropdownMenuItem>
+                                                    <DropdownMenuItem
+                                                        onSelect={() => {
+                                                            setCategory('Mystery');
+                                                            setData('category', 'Mystery');
+                                                        }}
+                                                    >
+                                                        <CheckIcon className="mr-2 h-4 w-4" />
+                                                        Mystery
+                                                    </DropdownMenuItem>
+                                                    <DropdownMenuItem
+                                                        onSelect={() => {
+                                                            setCategory('Historical Fiction');
+                                                            setData('category', 'Historical Fiction');
+                                                        }}
+                                                    >
+                                                        <CheckIcon className="mr-2 h-4 w-4" />
+                                                        Historical Fiction
                                                     </DropdownMenuItem>
                                                 </DropdownMenuGroup>
                                             </DropdownMenuContent>

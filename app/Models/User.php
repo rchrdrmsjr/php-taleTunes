@@ -64,4 +64,15 @@ class User extends Authenticatable
             ->withPivot('role', 'joined_at')
             ->withTimestamps();
     }
+
+    public function audiobooks()
+    {
+        return $this->hasMany(\App\Models\Audiobook::class);
+    }
+
+    public function favoriteAudiobooks()
+    {
+        return $this->belongsToMany(Audiobook::class, 'audiobook_user')
+            ->withTimestamps();
+    }
 }

@@ -38,6 +38,7 @@ export default function Upload() {
         audio_file: null,
         category: '',
         is_public: true,
+        author: '',
     });
 
     const handleCoverChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -63,7 +64,15 @@ export default function Upload() {
     const handleAudioChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
         if (file) {
-            setData('audio_file', file);
+            // Create a temporary audio element to get duration
+            const audio = new Audio(URL.createObjectURL(file));
+            audio.addEventListener('loadedmetadata', () => {
+                const minutes = Math.floor(audio.duration / 60);
+                const seconds = Math.floor(audio.duration % 60);
+                const duration = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+                setData('audio_file', file);
+                setData('duration', duration);
+            });
         }
     };
 
@@ -83,6 +92,7 @@ export default function Upload() {
         formData.append('description', data.description);
         formData.append('category', data.category);
         formData.append('is_public', data.is_public.toString());
+        formData.append('author', data.author as string);
 
         if (data.cover_image) {
             Array.from(data.cover_image).forEach((file) => {
@@ -94,7 +104,7 @@ export default function Upload() {
         }
 
         // Validate required fields
-        if (!data.title || !data.cover_image || !data.audio_file || !data.category) {
+        if (!data.title || !data.cover_image || !data.audio_file || !data.category || !data.author) {
             toast.error('Please fill in all required fields');
             return;
         }
@@ -155,6 +165,25 @@ export default function Upload() {
         router.visit('/dashboard');
     };
 
+    const handleRemoveCoverImage = (indexToRemove: number) => {
+        // Remove from coverPreview state
+        setCoverPreview((prevPreviews) => prevPreviews.filter((_, index) => index !== indexToRemove));
+
+        // Remove from form data (data.cover_image)
+        setData((prevData) => {
+            if (prevData.cover_image) {
+                const newCoverImages = Array.from(prevData.cover_image).filter((_, index) => index !== indexToRemove);
+                return { ...prevData, cover_image: newCoverImages.length > 0 ? newCoverImages : null };
+            }
+            return prevData;
+        });
+
+        // If no images are left, clear the file input as well
+        if (coverPreview.length === 1 && coverInputRef.current) {
+            coverInputRef.current.value = '';
+        }
+    };
+
     return (
         <AppLayout onPublish={handlePublish} isPublishing={processing} title={data.title}>
             <Head title="Upload Audiobook" />
@@ -195,19 +224,33 @@ export default function Upload() {
                 <div className="w-full md:w-1/3">
                     <Card className="flex flex-col items-center justify-center bg-blue-800 p-6 text-white">
                         <div
-                            className="flex h-40 w-full cursor-pointer flex-col items-center justify-center rounded-lg border-2 border-dashed border-white"
+                            className="flex w-full cursor-pointer flex-col items-center justify-center rounded-lg border-2 border-dashed border-white"
                             onClick={() => coverInputRef.current?.click()}
                         >
                             {coverPreview.length > 0 ? (
                                 <div className="grid grid-cols-2 gap-2">
-                                    {coverPreview.map((preview, index) => (
-                                        <img
-                                            key={index}
-                                            src={preview}
-                                            alt={`Cover preview ${index + 1}`}
-                                            className="h-32 w-full rounded-lg object-cover"
-                                        />
-                                    ))}
+                                    {coverPreview.map((preview: string, index: number) => {
+                                        return (
+                                            <div key={index} className="relative">
+                                                <img
+                                                    src={preview}
+                                                    alt={`Cover preview ${index + 1}`}
+                                                    className="h-20 w-full rounded-lg object-cover"
+                                                />
+                                                <Button
+                                                    type="button"
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        handleRemoveCoverImage(index);
+                                                    }}
+                                                    className="absolute -top-2 -right-2 flex h-6 w-6 items-center justify-center rounded-full bg-red-500 text-xs font-bold text-white"
+                                                    aria-label={`Remove image ${index + 1}`}
+                                                >
+                                                    &times;
+                                                </Button>
+                                            </div>
+                                        );
+                                    })}
                                 </div>
                             ) : (
                                 <>
@@ -257,6 +300,19 @@ export default function Upload() {
                             </div>
 
                             <div>
+                                <Label htmlFor="audiobook_author" className="font-bold">
+                                    Author
+                                </Label>
+                                <Input
+                                    id="audiobook_author"
+                                    placeholder="Enter author name"
+                                    value={data.author as string}
+                                    onChange={(e) => setData('author', e.target.value)}
+                                />
+                                {errors.author && <p className="mt-1 text-sm text-red-500">{errors.author}</p>}
+                            </div>
+
+                            <div>
                                 <Label htmlFor="audiobook_description" className="font-bold">
                                     Description
                                 </Label>
@@ -281,8 +337,8 @@ export default function Upload() {
                                 {errors.audio_file && <p className="mt-1 text-sm text-red-500">{errors.audio_file}</p>}
                             </div>
 
-                            <div className="flex items-center space-x-4">
-                                <Label htmlFor="audiobook_category" className="w-24 text-right font-bold">
+                            <div>
+                                <Label htmlFor="category" className="font-bold">
                                     Category
                                 </Label>
                                 <DropdownMenu>
@@ -298,39 +354,84 @@ export default function Upload() {
                                         <DropdownMenuGroup>
                                             <DropdownMenuItem
                                                 onSelect={() => {
-                                                    setCategory('Fiction');
-                                                    setData('category', 'Fiction');
+                                                    setCategory('Fantasy');
+                                                    setData('category', 'Fantasy');
                                                 }}
                                             >
                                                 <CheckIcon className="mr-2 h-4 w-4" />
-                                                Fiction
+                                                Fantasy
                                             </DropdownMenuItem>
                                             <DropdownMenuItem
                                                 onSelect={() => {
-                                                    setCategory('Non-fiction');
-                                                    setData('category', 'Non-fiction');
+                                                    setCategory('Romance');
+                                                    setData('category', 'Romance');
                                                 }}
                                             >
                                                 <CheckIcon className="mr-2 h-4 w-4" />
-                                                Non-fiction
+                                                Romance
                                             </DropdownMenuItem>
                                             <DropdownMenuItem
                                                 onSelect={() => {
-                                                    setCategory('Biography');
-                                                    setData('category', 'Biography');
+                                                    setCategory('Motivation');
+                                                    setData('category', 'Motivation');
                                                 }}
                                             >
                                                 <CheckIcon className="mr-2 h-4 w-4" />
-                                                Biography
+                                                Motivation
                                             </DropdownMenuItem>
                                             <DropdownMenuItem
                                                 onSelect={() => {
-                                                    setCategory('Children');
-                                                    setData('category', 'Children');
+                                                    setCategory('Horror');
+                                                    setData('category', 'Horror');
                                                 }}
                                             >
                                                 <CheckIcon className="mr-2 h-4 w-4" />
-                                                Children
+                                                Horror
+                                            </DropdownMenuItem>
+                                            <DropdownMenuItem
+                                                onSelect={() => {
+                                                    setCategory('Non-Fiction');
+                                                    setData('category', 'Non-Fiction');
+                                                }}
+                                            >
+                                                <CheckIcon className="mr-2 h-4 w-4" />
+                                                Non-Fiction
+                                            </DropdownMenuItem>
+                                            <DropdownMenuItem
+                                                onSelect={() => {
+                                                    setCategory('Memoir');
+                                                    setData('category', 'Memoir');
+                                                }}
+                                            >
+                                                <CheckIcon className="mr-2 h-4 w-4" />
+                                                Memoir
+                                            </DropdownMenuItem>
+                                            <DropdownMenuItem
+                                                onSelect={() => {
+                                                    setCategory('Science Fiction');
+                                                    setData('category', 'Science Fiction');
+                                                }}
+                                            >
+                                                <CheckIcon className="mr-2 h-4 w-4" />
+                                                Science Fiction
+                                            </DropdownMenuItem>
+                                            <DropdownMenuItem
+                                                onSelect={() => {
+                                                    setCategory('Mystery');
+                                                    setData('category', 'Mystery');
+                                                }}
+                                            >
+                                                <CheckIcon className="mr-2 h-4 w-4" />
+                                                Mystery
+                                            </DropdownMenuItem>
+                                            <DropdownMenuItem
+                                                onSelect={() => {
+                                                    setCategory('Historical Fiction');
+                                                    setData('category', 'Historical Fiction');
+                                                }}
+                                            >
+                                                <CheckIcon className="mr-2 h-4 w-4" />
+                                                Historical Fiction
                                             </DropdownMenuItem>
                                         </DropdownMenuGroup>
                                     </DropdownMenuContent>

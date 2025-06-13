@@ -12,6 +12,7 @@ return new class extends Migration
             $table->id();
             $table->foreignId('user_id')->constrained()->onDelete('cascade');
             $table->string('title');
+            $table->string('author');
             $table->text('description')->nullable();
             $table->longText('cover_image')->nullable();
             $table->string('audio_file');
@@ -23,6 +24,10 @@ return new class extends Migration
 
     public function down(): void
     {
+        // Drop the pivot table first to avoid foreign key constraint errors
+        if (Schema::hasTable('audiobook_room')) {
+            Schema::dropIfExists('audiobook_room');
+        }
         Schema::dropIfExists('audiobooks');
     }
 }; 

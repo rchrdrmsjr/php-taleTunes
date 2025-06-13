@@ -5,6 +5,8 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 class Audiobook extends Model
 {
@@ -12,18 +14,18 @@ class Audiobook extends Model
 
     protected $fillable = [
         'title',
+        'author',
         'description',
         'cover_image',
         'audio_file',
+        'duration',
         'category',
         'is_public',
-        'is_favorite',
         'user_id',
     ];
 
     protected $casts = [
         'is_public' => 'boolean',
-        'is_favorite' => 'boolean',
         'cover_image' => 'array',
     ];
 
@@ -34,5 +36,16 @@ class Audiobook extends Model
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
+    }
+
+    public function comments(): HasMany
+    {
+        return $this->hasMany(Comment::class);
+    }
+
+    public function favoritedBy(): BelongsToMany
+    {
+        return $this->belongsToMany(User::class, 'audiobook_user')
+            ->withTimestamps();
     }
 } 

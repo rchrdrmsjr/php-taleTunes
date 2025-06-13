@@ -176,6 +176,7 @@ export default function Dashboard() {
     const userAudiobooks = (usePage().props as any)?.userAudiobooks ?? [];
     const otherAudiobooks = (usePage().props as any)?.otherAudiobooks ?? [];
     const favoriteAudiobooks = (usePage().props as any)?.favoriteAudiobooks ?? [];
+    const authUser = (usePage().props as any)?.auth?.user;
 
     // Shuffle recommendations when component mounts or otherAudiobooks changes
     useEffect(() => {
@@ -300,7 +301,10 @@ export default function Dashboard() {
                     <section className="space-y-4">
                         <div className="flex flex-col justify-between gap-2">
                             <h2 className="text-2xl font-semibold">My Favorites</h2>
-                            <p className="text-gray-600">Joseph's favorite audiobooks fuel his adventures, mysteries, and discoveries!</p>
+                            <p className="text-gray-600">
+                                {authUser?.name ? `${authUser.username}'s` : 'Your'} favorite audiobooks fuel {authUser?.username ? ' his' : ' your'}{' '}
+                                adventures, mysteries, and discoveries!
+                            </p>
                         </div>
                         <div className="relative">
                             <Swiper
@@ -325,7 +329,7 @@ export default function Dashboard() {
                                             <div className="audiobook-item cursor-pointer" onClick={() => handleAudiobookClick(book.id)}>
                                                 <AudiobookCard
                                                     title={book.title}
-                                                    author={book.user?.name || 'Unknown'}
+                                                    author={book.author || 'Unknown'}
                                                     coverImage={book.cover_image ? `/storage/${getFirstCoverImage(book.cover_image)}` : ''}
                                                     description={book.description}
                                                 />
@@ -370,7 +374,7 @@ export default function Dashboard() {
                                             <div className="audiobook-item cursor-pointer" onClick={() => handleAudiobookClick(work.id)}>
                                                 <HorizontalAudiobookCard
                                                     title={work.title}
-                                                    author={work.user?.name || 'You'}
+                                                    author={work.author || 'Unknown'}
                                                     coverImage={work.cover_image ? `/storage/${getFirstCoverImage(work.cover_image)}` : ''}
                                                     description={work.description}
                                                 />
@@ -417,7 +421,7 @@ export default function Dashboard() {
                                             <div className="audiobook-item cursor-pointer" onClick={() => handleAudiobookClick(book.id)}>
                                                 <AudiobookCard
                                                     title={book.title}
-                                                    author={book.user?.name || 'Unknown'}
+                                                    author={book.author || 'Unknown'}
                                                     coverImage={book.cover_image ? `/storage/${getFirstCoverImage(book.cover_image)}` : ''}
                                                     description={book.description}
                                                 />
@@ -434,7 +438,7 @@ export default function Dashboard() {
                     <div className="swiper-button-next recommendations-next !h-12 !w-12 !rounded-full !bg-white/80 !shadow-md hover:!bg-white"></div>
                 </div>
                 {/* Footer */}
-                <div className=" text-center text-sm text-gray-500">
+                <div className="text-center text-sm text-gray-500">
                     <p>© 2025 TaleTunes. All rights reserved.</p>
                     <p>Discover and enjoy a world of audiobooks — anytime, anywhere.</p>
                 </div>

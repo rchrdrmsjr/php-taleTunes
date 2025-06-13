@@ -34,7 +34,7 @@ export function AudiobookCard({
             </div>
             <div>
                 <h3 className="text-lg font-semibold text-gray-900">{title}</h3>
-                <p className="text-sm text-gray-600">by {author}</p>
+                <p className="text-sm text-gray-600">{author}</p>
                 {/* {description && (
                     <p className="mt-2 text-sm text-gray-500 line-clamp-2">{description}</p>
                 )} */}

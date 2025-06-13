@@ -17,9 +17,16 @@ class ProfileController extends Controller
             ->latest()
             ->get();
 
+        // Count of rooms the user is a member of
+        $roomCount = $user->joinedRooms()->count();
+        // Count of favorite audiobooks for the user
+        $favoritesCount = $user->favoriteAudiobooks()->count();
+
         return Inertia::render('profile/show', [
             'user' => $user,
             'audiobooks' => $audiobooks,
+            'roomCount' => $roomCount,
+            'favoritesCount' => $favoritesCount,
         ]);
     }
 }

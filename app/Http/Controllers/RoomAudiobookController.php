@@ -46,11 +46,12 @@ class RoomAudiobookController extends Controller
 
             $validated = $request->validate([
                 'title' => 'required|string|max:255',
+                'author' => 'required|string|max:255',
                 'description' => 'nullable|string|max:2000',
                 'cover_image.*' => 'required|image|mimes:jpeg,jpg,png|max:51200', // 50MB max per image
                 'cover_image' => 'required|array|min:1|max:10', // Max 10 images
                 'audio_file' => 'required|file|mimes:mp3|max:51200', // 50MB max
-                'category' => 'required|string|in:Fiction,Non-fiction,Biography,Children',
+                'category' => 'required|string|in:Fantasy,Romance,Motivation,Horror,Non-Fiction,Memoir,Science Fiction,Mystery,Historical Fiction',
             ], [
                 'cover_image.*.mimes' => 'The cover image must be a file of type: jpeg, jpg, png.',
                 'cover_image.*.max' => 'The cover image may not be greater than 50MB.',
@@ -100,6 +101,7 @@ class RoomAudiobookController extends Controller
 
             $audiobook = Audiobook::create([
                 'title' => $validated['title'],
+                'author' => $validated['author'],
                 'description' => $validated['description'],
                 'cover_image' => json_encode($coverPaths),
                 'audio_file' => $audioPath,

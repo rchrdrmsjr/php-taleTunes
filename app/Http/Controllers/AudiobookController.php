@@ -26,11 +26,13 @@ class AudiobookController extends Controller
 
             $validated = $request->validate([
                 'title' => 'required|string|max:255',
+                'author' => 'required|string|max:255',
                 'description' => 'nullable|string|max:2000',
                 'cover_image.*' => 'required|image|mimes:jpeg,jpg,png|max:51200', // 50MB max per image
                 'cover_image' => 'required|array|min:1|max:10', // Max 10 images
                 'audio_file' => 'required|file|mimes:mp3|max:51200', // 50MB max
-                'category' => 'required|string|in:Fiction,Non-fiction,Biography,Children',
+                'duration' => 'required|string',
+                'category' => 'required|string|in:Fantasy,Romance,Motivation,Horror,Non-Fiction,Memoir,Science Fiction,Mystery,Historical Fiction',
                 'is_public' => 'boolean',
             ], [
                 'cover_image.*.mimes' => 'The cover image must be a file of type: jpeg, jpg, png.',
@@ -39,6 +41,7 @@ class AudiobookController extends Controller
                 'cover_image.array' => 'The cover image must be an array.',
                 'cover_image.min' => 'Please select at least one cover image.',
                 'cover_image.max' => 'You can upload maximum 10 images.',
+                'duration.required' => 'Audio duration is required.',
             ]);
 
             Log::info('Validation passed', ['validated_data' => $validated]);
@@ -81,9 +84,11 @@ class AudiobookController extends Controller
 
             $audiobook = Audiobook::create([
                 'title' => $validated['title'],
+                'author' => $validated['author'],
                 'description' => $validated['description'],
                 'cover_image' => json_encode($coverPaths),
                 'audio_file' => $audioPath,
+                'duration' => $validated['duration'],
                 'category' => $validated['category'],
                 'is_public' => $validated['is_public'],
                 'user_id' => auth()->id(),
@@ -111,14 +116,14 @@ class AudiobookController extends Controller
         // Check if the audiobook is public
         if ($audiobook->is_public) {
             return response()->json([
-                'audiobook' => $audiobook->load('user'),
+                'audiobook' => $audiobook->load(['user', 'comments.user', 'favoritedBy']),
             ]);
         }
 
         // Check if the user owns the audiobook
         if ($audiobook->user_id === $user->id) {
             return response()->json([
-                'audiobook' => $audiobook->load('user'),
+                'audiobook' => $audiobook->load(['user', 'comments.user', 'favoritedBy']),
             ]);
         }
 
@@ -127,7 +132,7 @@ class AudiobookController extends Controller
         foreach ($userRooms as $room) {
             if ($room->audiobooks->contains($audiobook->id)) {
                 return response()->json([
-                    'audiobook' => $audiobook->load('user'),
+                    'audiobook' => $audiobook->load(['user', 'comments.user', 'favoritedBy']),
                 ]);
             }
         }
@@ -143,13 +148,18 @@ class AudiobookController extends Controller
             abort(403);
         }
 
-        $audiobook->update([
-            'is_favorite' => !$audiobook->is_favorite
-        ]);
+        $user = auth()->user();
+        $isFavorited = $audiobook->favoritedBy()->where('user_id', $user->id)->exists();
+
+        if ($isFavorited) {
+            $audiobook->favoritedBy()->detach($user->id);
+        } else {
+            $audiobook->favoritedBy()->attach($user->id);
+        }
 
         return response()->json([
             'success' => true,
-            'is_favorite' => $audiobook->is_favorite
+            'is_favorite' => !$isFavorited
         ]);
     }
 

@@ -14,9 +14,10 @@ class AudiobookFactory extends Factory
     {
         return [
             'title' => $this->faker->sentence(3),
+            'author' => $this->faker->name,
             'description' => $this->faker->paragraph(),
             'audio_file' => '/audio/sample.mp3',
-            'category' => $this->faker->randomElement(['Fiction', 'Non-fiction', 'Biography', 'Children']),
+            'category' => $this->faker->randomElement(['Fantasy', 'Romance', 'Motivation', 'Horror', 'Non-Fiction', 'Memoir', 'Science Fiction', 'Mystery', 'Historical Fiction']),
             'is_public' => true,
             'is_favorite' => false,
         ];
