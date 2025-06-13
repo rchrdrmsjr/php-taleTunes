@@ -37,15 +37,13 @@ export default function AuthModal({ isOpen, onClose, status, canResetPassword }:
                     </DialogHeader>
 
                     <div className="flex flex-col gap-6">
-                        <Button
-                            type="button"
-                            variant="outline"
-                            className="flex w-full items-center justify-center gap-2 rounded-full border-2 border-gray-200 bg-white text-gray-700 hover:bg-gray-50"
-                            onClick={handleGoogleSignIn}
+                        <a
+                            href={route('google.redirect')}
+                            className="flex w-full items-center justify-center gap-2 rounded-full border-2 border-gray-200 bg-white px-4 py-2 text-gray-700 hover:bg-gray-50"
                         >
                             <img src="/images/google.svg" alt="Google" className="h-5 w-5" />
                             Continue with Google
-                        </Button>
+                        </a>
 
                         <div className="relative">
                             <div className="absolute inset-0 flex items-center">

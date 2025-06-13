@@ -9,6 +9,7 @@ use App\Models\Audiobook;
 use App\Http\Controllers\RoomController;
 use App\Http\Controllers\RoomAudiobookController;
 
+
 Route::get('/', function () {
     return Inertia::render('welcome');
 })->name('home');

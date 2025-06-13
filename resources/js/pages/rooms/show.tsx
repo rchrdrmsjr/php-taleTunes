@@ -360,8 +360,16 @@ export default function ShowRoom({ room }: Props) {
                                         </div>
                                         <div className="flex justify-between">
                                             <span>Library status:</span>
-                                            <span className={`font-medium ${stats.totalBooks > 0 ? 'text-emerald-600' : 'text-amber-600'}`}>
-                                                {stats.totalBooks > 0 ? 'Growing' : 'Getting Started'}
+                                            <span
+                                                className={`font-medium ${
+                                                    stats.totalBooks > 50
+                                                        ? 'text-teal-600'
+                                                        : stats.totalBooks > 0
+                                                          ? 'text-emerald-600'
+                                                          : 'text-amber-600'
+                                                }`}
+                                            >
+                                                {stats.totalBooks > 50 ? 'Thriving Collection' : stats.totalBooks > 0 ? 'Growing' : 'Getting Started'}
                                             </span>
                                         </div>
                                     </div>

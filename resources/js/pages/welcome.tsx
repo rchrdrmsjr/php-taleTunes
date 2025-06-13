@@ -22,6 +22,10 @@ export default function Welcome() {
         setIsLoginModalOpen(false);
     };
 
+    interface ButtonProps {
+        onClick: (event: React.MouseEvent<HTMLButtonElement>) => void;
+    }
+
     return (
         <>
             <Head title="Welcome">
@@ -104,13 +108,16 @@ export default function Welcome() {
                 <div className="flex flex-1 items-center justify-center p-8">
                     <div className="w-full max-w-md space-y-8">
                         <div>
-                            <h1 className="mb-4 text-5xl font-bold ">New audiobooks</h1>
+                            <h1 className="mb-4 text-5xl font-bold">New audiobooks</h1>
                             <p className="text-xl font-bold">Join in TaleTunes today.</p>
                         </div>
 
                         {/* Sign up buttons */}
                         <div className="space-y-6">
-                            <Button variant="outline" className="h-14 w-full border-gray-300 text-base text-gray-700 hover:bg-gray-50 rounded-full">
+                            <a
+                                href={route('google.redirect')}
+                                className="flex h-14 w-full items-center justify-center rounded-full border border-gray-300 bg-white px-4 text-base text-gray-700 hover:bg-gray-50"
+                            >
                                 <svg className="mr-3 h-5 w-5" viewBox="0 0 24 24">
                                     <path
                                         fill="#4285F4"
@@ -130,7 +137,7 @@ export default function Welcome() {
                                     />
                                 </svg>
                                 Sign up with Google
-                            </Button>
+                            </a>
 
                             <div className="flex items-center">
                                 <div className="flex-1 border-t border-gray-300"></div>
@@ -140,7 +147,7 @@ export default function Welcome() {
 
                             <Button
                                 onClick={handleRegisterClick}
-                                className="h-14 w-full bg-blue-600 text-base font-medium text-white hover:bg-blue-700 rounded-full"
+                                className="h-14 w-full rounded-full bg-blue-600 text-base font-medium text-white hover:bg-blue-700"
                             >
                                 Create account
                             </Button>
@@ -169,7 +176,7 @@ export default function Welcome() {
                             <Button
                                 onClick={handleLoginClick}
                                 variant="outline"
-                                className="h-14 w-full border-gray-300 text-base text-blue-600 hover:bg-gray-50 rounded-full"
+                                className="h-14 w-full rounded-full border-gray-300 text-base text-blue-600 hover:bg-gray-50"
                             >
                                 Sign in
                             </Button>

@@ -82,7 +82,7 @@ class RoomController extends Controller
         if ($room->isMember(auth()->user())) {
             return back()->withErrors(['error' => 'You are already a member of this room.']);
         }
-
+        
         $room->members()->attach(auth()->id(), [
             'role' => 'member',
             'joined_at' => now(),

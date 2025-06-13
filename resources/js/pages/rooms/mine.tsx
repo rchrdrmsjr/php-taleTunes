@@ -113,10 +113,10 @@ export default function MyRooms({ ownedRooms = [], joinedRooms = [] }: Props) {
     return (
         <AppLayout>
             <Head title="My Rooms" />
-            <div className="container mx-auto px-4 py-8">
+            <div className="container mx-auto px-4">
                 <div className="mb-8 flex items-center justify-between">
                     <h1 className="text-3xl font-bold"></h1>
-                    <div className="flex space-x-2">
+                    {/* <div className="flex space-x-2">
                         <Button variant="outline" onClick={() => setIsJoinRoomModalOpen(true)} className="flex items-center space-x-2">
                             <FolderSearch className="h-4 w-4" />
                             <span>Join Room</span>
@@ -128,7 +128,7 @@ export default function MyRooms({ ownedRooms = [], joinedRooms = [] }: Props) {
                             <FolderPlus className="h-4 w-4" />
                             <span>Create Room</span>
                         </Button>
-                    </div>
+                    </div> */}
                 </div>
 
                 {/* Owned Rooms */}
