@@ -37,6 +37,8 @@ import AppLogo from './app-logo';
 import AppLogoIcon from './app-logo-icon';
 import CreateRoomModal from './create-room-modal';
 import JoinRoomModal from './join-room-modal';
+import { NotFoundModal } from './not-found-modal'; // Import NotFoundModal
+import ViewPostModal from './view-post-modal'; // Import ViewPostModal
 
 // --- Your Original Nav Items ---
 const mainNavItemsOriginal: NavItem[] = [
@@ -81,17 +83,28 @@ export function AppHeader({ breadcrumbs = [] }: AppHeaderProps) {
     const [searchTerm, setSearchTerm] = useState('');
     const [isJoinRoomModalOpen, setIsJoinRoomModalOpen] = useState(false);
     const [isCreateRoomModalOpen, setIsCreateRoomModalOpen] = useState(false);
+    const [isBrowseDropdownOpen, setIsBrowseDropdownOpen] = useState(false);
+    const [isRoomsDropdownOpen, setIsRoomsDropdownOpen] = useState(false);
+    const [selectedAudiobookIdForSearch, setSelectedAudiobookIdForSearch] = useState<number | null>(null); // New state
+    const [isViewModalOpenFromSearch, setIsViewModalOpenFromSearch] = useState(false); // New state
+    const [isNotFoundModalOpen, setIsNotFoundModalOpen] = useState(false); // New state for not found modal
 
     const roomNavItems: NavItem[] = [
         { title: 'My Rooms', href: '/rooms/mine', icon: FolderHeart },
         {
             title: 'Join Room',
-            onClick: () => setIsJoinRoomModalOpen(true),
+            onClick: () => {
+                setIsJoinRoomModalOpen(true);
+                setIsRoomsDropdownOpen(false); // Close dropdown when modal opens
+            },
             icon: FolderSearch,
         },
         {
             title: 'Create Room',
-            onClick: () => setIsCreateRoomModalOpen(true),
+            onClick: () => {
+                setIsCreateRoomModalOpen(true);
+                setIsRoomsDropdownOpen(false); // Close dropdown when modal opens
+            },
             icon: FolderPlus,
         },
     ];
@@ -104,12 +117,28 @@ export function AppHeader({ breadcrumbs = [] }: AppHeaderProps) {
         }
     };
 
-    const handleSearchSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    const handleSearchSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         if (searchTerm.trim()) {
-            // Inertia.get('/search', { query: searchTerm }); // Or your search route
-            console.log('Searching for:', searchTerm);
-            // router.visit(`/search?query=${encodeURIComponent(searchTerm)}`); // Using router if available via usePage() or import
+            try {
+                const response = await fetch(route('audiobooks.searchByCode', { code: searchTerm.trim() }));
+                const data = await response.json();
+
+                if (response.ok && data.audiobook && data.audiobook.id) {
+                    setSelectedAudiobookIdForSearch(data.audiobook.id);
+                    setIsViewModalOpenFromSearch(true);
+                } else if (response.status === 404) {
+                    setIsNotFoundModalOpen(true);
+                } else if (data.errors && data.errors.code) {
+                    alert(data.errors.code);
+                } else {
+                    alert('An error occurred during search.');
+                }
+            } catch (error) {
+                console.error('Search error:', error);
+                alert('An error occurred during search.');
+            }
+            setSearchTerm(''); // Clear search term after submission
         }
     };
 
@@ -268,7 +297,7 @@ export function AppHeader({ breadcrumbs = [] }: AppHeaderProps) {
                         {' '}
                         {/* Added flex-grow */}
                         {/* Browse Dropdown */}
-                        <DropdownMenu>
+                        <DropdownMenu open={isBrowseDropdownOpen} onOpenChange={setIsBrowseDropdownOpen}>
                             <DropdownMenuTrigger asChild>
                                 <Button variant="ghost" className="h-9 px-3 text-sm font-bold">
                                     Browse <ChevronDown className="ml-1 h-4 w-4" />
@@ -293,7 +322,7 @@ export function AppHeader({ breadcrumbs = [] }: AppHeaderProps) {
                             </DropdownMenuContent>
                         </DropdownMenu>
                         {/* Room Dropdown */}
-                        <DropdownMenu>
+                        <DropdownMenu open={isRoomsDropdownOpen} onOpenChange={setIsRoomsDropdownOpen}>
                             <DropdownMenuTrigger asChild>
                                 <Button variant="ghost" className="h-9 px-3 text-sm font-bold">
                                     Rooms <ChevronDown className="ml-1 h-4 w-4" />
@@ -417,8 +446,36 @@ export function AppHeader({ breadcrumbs = [] }: AppHeaderProps) {
             )}
 
             {/* Add modals */}
-            <JoinRoomModal isOpen={isJoinRoomModalOpen} onClose={() => setIsJoinRoomModalOpen(false)} />
-            <CreateRoomModal isOpen={isCreateRoomModalOpen} onClose={() => setIsCreateRoomModalOpen(false)} />
+            <JoinRoomModal
+                isOpen={isJoinRoomModalOpen}
+                onClose={() => {
+                    setIsJoinRoomModalOpen(false);
+                }}
+            />
+            <CreateRoomModal
+                isOpen={isCreateRoomModalOpen}
+                onClose={() => {
+                    setIsCreateRoomModalOpen(false);
+                }}
+            />
+            {/* View Post Modal for Search Results */}
+            {isViewModalOpenFromSearch && selectedAudiobookIdForSearch && (
+                <ViewPostModal
+                    isOpen={isViewModalOpenFromSearch}
+                    onClose={() => {
+                        setIsViewModalOpenFromSearch(false);
+                        setSelectedAudiobookIdForSearch(null);
+                    }}
+                    audiobookId={selectedAudiobookIdForSearch}
+                />
+            )}
+
+            <NotFoundModal
+                isOpen={isNotFoundModalOpen}
+                onClose={() => {
+                    setIsNotFoundModalOpen(false);
+                }}
+            />
         </>
     );
 }

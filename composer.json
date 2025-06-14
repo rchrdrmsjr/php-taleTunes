@@ -12,9 +12,11 @@
         "php": "^8.2",
         "inertiajs/inertia-laravel": "^2.0",
         "laravel/framework": "^12.0",
+        "laravel/scout": "^10.15",
         "laravel/socialite": "^5.21",
         "laravel/tinker": "^2.10.1",
         "tightenco/ziggy": "^2.4",
+        "typesense/typesense-php": "^5.1",
         "workos/workos-php-laravel": "^4.2"
     },
     "require-dev": {

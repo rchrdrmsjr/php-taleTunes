@@ -44,6 +44,8 @@ class RoomAudiobookController extends Controller
                 'has_audio' => $request->hasFile('audio_file'),
             ]);
 
+            Log::debug('Incoming request for room audiobook store:', $request->all());
+
             $validated = $request->validate([
                 'title' => 'required|string|max:255',
                 'author' => 'required|string|max:255',
@@ -52,6 +54,7 @@ class RoomAudiobookController extends Controller
                 'cover_image' => 'required|array|min:1|max:10', // Max 10 images
                 'audio_file' => 'required|file|mimes:mp3|max:51200', // 50MB max
                 'category' => 'required|string|in:Fantasy,Romance,Motivation,Horror,Non-Fiction,Memoir,Science Fiction,Mystery,Historical Fiction',
+                'generated_code' => 'nullable|string|max:255',
             ], [
                 'cover_image.*.mimes' => 'The cover image must be a file of type: jpeg, jpg, png.',
                 'cover_image.*.max' => 'The cover image may not be greater than 50MB.',
@@ -108,6 +111,7 @@ class RoomAudiobookController extends Controller
                 'category' => $validated['category'],
                 'is_public' => false, // Always false for room audiobooks
                 'user_id' => auth()->id(),
+                'generated_code' => $request->generated_code ?? null,
             ]);
 
             // Attach the audiobook to the room

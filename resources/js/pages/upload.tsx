@@ -1,7 +1,6 @@
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { type AudiobookFormData, type AudiobookFormErrors } from '@/types';
 import { router, useForm } from '@inertiajs/react';
 import { useRef, useState } from 'react';
 import Switch from 'react-switch';
@@ -22,6 +21,32 @@ import AppLayout from '@/layouts/app-layout';
 import { Head } from '@inertiajs/react';
 import { CheckIcon, ChevronDownIcon, ImageIcon } from 'lucide-react';
 
+interface AudiobookFormData {
+    [key: string]: File | File[] | string | boolean | null | undefined;
+    title: string;
+    description: string;
+    cover_image: File[] | null;
+    audio_file: File | null;
+    category: string;
+    is_public: boolean;
+    author: string;
+    duration?: string;
+    generated_code?: string;
+}
+
+interface AudiobookFormErrors {
+    [key: string]: string | undefined;
+    title?: string;
+    description?: string;
+    cover_image?: string;
+    audio_file?: string;
+    category?: string;
+    is_public?: string;
+    author?: string;
+    duration?: string;
+    generated_code?: string;
+}
+
 export default function Upload() {
     const [isPublic, setIsPublic] = useState(true);
     const [category, setCategory] = useState('');
@@ -31,7 +56,7 @@ export default function Upload() {
     const coverInputRef = useRef<HTMLInputElement>(null);
     const audioInputRef = useRef<HTMLInputElement>(null);
 
-    const { data, setData, post, processing, errors, reset } = useForm<AudiobookFormData>({
+    const { data, setData, post, processing, errors, reset, transform } = useForm<AudiobookFormData>({
         title: '',
         description: '',
         cover_image: null,
@@ -39,7 +64,14 @@ export default function Upload() {
         category: '',
         is_public: true,
         author: '',
+        generated_code: '',
     });
+
+    // Transform data before sending to ensure generated_code is always set
+    transform((data) => ({
+        ...data,
+        generated_code: data.generated_code || Math.random().toString(36).substring(2, 10).toUpperCase(),
+    }));
 
     const handleCoverChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const files = e.target.files;
@@ -86,22 +118,10 @@ export default function Upload() {
     };
 
     const handlePublish = () => {
-        // Create FormData object to handle file uploads
-        const formData = new FormData();
-        formData.append('title', data.title);
-        formData.append('description', data.description);
-        formData.append('category', data.category);
-        formData.append('is_public', data.is_public.toString());
-        formData.append('author', data.author as string);
-
-        if (data.cover_image) {
-            Array.from(data.cover_image).forEach((file) => {
-                formData.append('cover_image[]', file);
-            });
-        }
-        if (data.audio_file) {
-            formData.append('audio_file', data.audio_file);
-        }
+        // All data is already in the `data` state of useForm, including files.
+        // We just need to ensure generated_code is set in the data state.
+        const generatedCode = Math.random().toString(36).substring(2, 10).toUpperCase(); // Simple 8-char alphanumeric code
+        setData('generated_code', generatedCode);
 
         // Validate required fields
         if (!data.title || !data.cover_image || !data.audio_file || !data.category || !data.author) {
@@ -112,15 +132,13 @@ export default function Upload() {
         let toastId: string | number | undefined;
 
         post(route('audiobooks.store'), {
-            ...formData,
-            forceFormData: true,
             method: 'post',
             headers: {
                 'X-Requested-With': 'XMLHttpRequest',
                 Accept: 'application/json',
                 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
             },
-            onProgress: (progress) => {
+            onProgress: (progress: any) => {
                 if (progress && progress.loaded && progress.total) {
                     const percentage = Math.round((progress.loaded * 100) / progress.total);
                     if (toastId) {
@@ -306,7 +324,7 @@ export default function Upload() {
                                 <Input
                                     id="audiobook_author"
                                     placeholder="Enter author name"
-                                    value={data.author as string}
+                                    value={data.author}
                                     onChange={(e) => setData('author', e.target.value)}
                                 />
                                 {errors.author && <p className="mt-1 text-sm text-red-500">{errors.author}</p>}

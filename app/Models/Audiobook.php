@@ -22,6 +22,7 @@ class Audiobook extends Model
         'category',
         'is_public',
         'user_id',
+        'generated_code',
     ];
 
     protected $casts = [

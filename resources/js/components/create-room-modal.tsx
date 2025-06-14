@@ -1,7 +1,7 @@
 'use client';
 
 import { Button } from '@/components/ui/button';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
@@ -95,6 +95,7 @@ export default function CreateRoomModal({ isOpen, onClose }: CreateRoomModalProp
             <DialogContent className="p-0 sm:max-w-[500px]">
                 <DialogHeader className="border-b px-6 py-4">
                     <DialogTitle className="ml-8 text-xl font-bold text-gray-600">Create Room</DialogTitle>
+                    <DialogDescription>Fill in the details to create your new room.</DialogDescription>
                 </DialogHeader>
 
                 <div className="px-6 py-6">

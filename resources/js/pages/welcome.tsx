@@ -33,75 +33,15 @@ export default function Welcome() {
                 <link href="https://fonts.bunny.net/css?family=instrument-sans:400,500,600" rel="stylesheet" />
             </Head>
 
-            <div className="flex min-h-screen bg-gray-100 px-4 sm:px-8 md:px-12 lg:px-20 xl:px-32">
+            <div className="flex min-h-screen px-4 sm:px-8 md:px-12 lg:px-20 xl:px-32">
                 {/* Left side - Illustration */}
                 <div className="flex flex-1 items-center justify-center p-8">
-                    <div className="relative">
-                        {/* Musical notes and decorative elements */}
-                        <div className="absolute -top-4 -left-8 text-blue-600">
-                            <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
-                                <path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z" />
-                            </svg>
-                        </div>
-                        <div className="absolute -top-2 -right-6 text-blue-600">
-                            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
-                                <path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z" />
-                            </svg>
-                        </div>
-                        <div className="absolute top-8 -left-12 text-blue-600">
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
-                                <circle cx="12" cy="12" r="10" />
-                                <polygon points="10,8 16,12 10,16" />
-                            </svg>
-                        </div>
-                        <div className="absolute top-4 -right-8 text-blue-600">
-                            <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
-                                <path d="M9 12l2 2 4-4" />
-                                <circle cx="12" cy="12" r="10" stroke="currentColor" fill="none" />
-                            </svg>
-                        </div>
-                        <div className="absolute bottom-4 -left-10 text-blue-600">
-                            <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor">
-                                <path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z" />
-                            </svg>
-                        </div>
-                        <div className="absolute -right-10 bottom-8 text-blue-600">
-                            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
-                                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z" />
-                            </svg>
-                        </div>
-
-                        {/* Main illustration */}
-                        <div className="relative flex h-40 w-64 items-end justify-center overflow-hidden rounded-full bg-blue-600">
-                            {/* Chair legs */}
-                            <div className="absolute bottom-0 left-16 h-10 w-1 rounded bg-gray-800"></div>
-                            <div className="absolute right-16 bottom-0 h-10 w-1 rounded bg-gray-800"></div>
-                            <div className="absolute bottom-0 left-20 h-8 w-1 rounded bg-gray-800"></div>
-                            <div className="absolute right-20 bottom-0 h-8 w-1 rounded bg-gray-800"></div>
-
-                            {/* Person */}
-                            <div className="relative mb-6">
-                                {/* Body */}
-                                <div className="relative h-24 w-20 rounded-full bg-white">
-                                    {/* Head */}
-                                    <div className="absolute -top-10 left-1/2 -translate-x-1/2 transform">
-                                        <div className="relative h-14 w-14 rounded-full bg-orange-200">
-                                            {/* Hair */}
-                                            <div className="absolute -top-3 -left-3 h-14 w-20 rounded-full bg-gray-800"></div>
-                                            <div className="absolute -top-2 -left-2 h-12 w-18 rounded-full bg-gray-800"></div>
-                                            {/* Face features */}
-                                            <div className="absolute top-4 left-4 h-1 w-1 rounded-full bg-gray-800"></div>
-                                            <div className="absolute top-4 right-4 h-1 w-1 rounded-full bg-gray-800"></div>
-                                            <div className="absolute top-6 left-1/2 h-1 w-2 -translate-x-1/2 transform rounded-full bg-gray-800"></div>
-                                        </div>
-                                    </div>
-                                    {/* Arms */}
-                                    <div className="absolute top-6 -left-4 h-4 w-8 -rotate-12 transform rounded-full bg-orange-200"></div>
-                                    <div className="absolute top-6 -right-4 h-4 w-8 rotate-12 transform rounded-full bg-orange-200"></div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+                    {/* Replace with your JPG image */}
+                    <img
+                        src="/images/your-illustration.jpg" // IMPORTANT: Ensure this path is correct
+                        alt="Welcome Illustration"
+                        className="max-h-full max-w-full object-contain"
+                    />
                 </div>
 
                 {/* Right side - Content */}
@@ -162,7 +102,7 @@ export default function Welcome() {
                             and{' '}
                             <a href="#" className="text-blue-600 hover:underline">
                                 Privacy Policy
-                            </a>
+                            </a>{' '}
                             , including{' '}
                             <a href="#" className="text-blue-600 hover:underline">
                                 Cookie Use

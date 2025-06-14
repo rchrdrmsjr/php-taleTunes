@@ -236,11 +236,9 @@ Hero Section Navigation .hero-prev {
 /* Hero Swiper specific styles */
 .hero-swiper {
     padding: 0;
-    height: 400px;
 }
 
 .hero-swiper .swiper-slide {
-    height: 400px;
     display: flex;
     align-items: center;
     justify-content: center;

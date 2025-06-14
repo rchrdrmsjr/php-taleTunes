@@ -1,11 +1,12 @@
 import { Button } from '@/components/ui/button';
-import { Dialog, DialogContent } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogDescription, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { type SharedData } from '@/types';
 import { usePage } from '@inertiajs/react';
 import axios from 'axios';
 import { ChevronLeft, ChevronRight, Download, Heart, Pause, Play } from 'lucide-react';
 import { useEffect, useState } from 'react';
+import ConfirmationDialog from './confirmation-dialog';
 
 interface Audiobook {
     id: number;
@@ -35,6 +36,7 @@ interface Audiobook {
         };
         created_at: string;
     }>;
+    generated_code?: string;
 }
 
 interface ViewPostModalProps {
@@ -52,6 +54,8 @@ const ViewPostModal = ({ isOpen, onClose, audiobookId }: ViewPostModalProps) => 
     const [comment, setComment] = useState('');
     const [audio] = useState(new Audio());
     const [isFavorited, setIsFavorited] = useState(false);
+    const [showConfirmDialog, setShowConfirmDialog] = useState(false);
+    const [isUpdated, setIsUpdated] = useState(false);
 
     // Helper function to get cover images
     const getCoverImages = (coverImage: string | string[]): string[] => {
@@ -72,7 +76,7 @@ const ViewPostModal = ({ isOpen, onClose, audiobookId }: ViewPostModalProps) => 
         if (audiobookId && isOpen) {
             fetchAudiobook();
         }
-    }, [audiobookId, isOpen]);
+    }, [audiobookId, isOpen, isUpdated]);
 
     useEffect(() => {
         return () => {
@@ -98,6 +102,7 @@ const ViewPostModal = ({ isOpen, onClose, audiobookId }: ViewPostModalProps) => 
             // Ensure cover_image is properly handled
             data.cover_image = getCoverImages(data.cover_image);
             setAudiobook(data);
+            setIsUpdated(false); // Reset update flag after fetching new data
             // Update isFavorited state based on the fetched data
             if (auth.user) {
                 const favorited = data.favorited_by?.some((user: { id: number }) => user.id === auth.user!.id) ?? false;
@@ -162,6 +167,12 @@ const ViewPostModal = ({ isOpen, onClose, audiobookId }: ViewPostModalProps) => 
         }
     };
 
+    const handleDownload = () => {
+        if (audiobook) {
+            window.open(route('audiobooks.download', { audiobook: audiobook.id }));
+        }
+    };
+
     const nextImage = () => {
         if (!audiobook) return;
         setCurrentImageIndex((prev) => (prev + 1) % audiobook.cover_image.length);
@@ -170,6 +181,26 @@ const ViewPostModal = ({ isOpen, onClose, audiobookId }: ViewPostModalProps) => 
     const previousImage = () => {
         if (!audiobook) return;
         setCurrentImageIndex((prev) => (prev - 1 + audiobook.cover_image.length) % audiobook.cover_image.length);
+    };
+
+    const handleDelete = async () => {
+        setShowConfirmDialog(true);
+    };
+
+    const handleConfirmDelete = async () => {
+        if (!audiobook) return;
+
+        try {
+            setShowConfirmDialog(false);
+            setIsLoading(true);
+            await axios.delete(route('audiobooks.destroy', { audiobook: audiobook.id }));
+            onClose();
+        } catch (error) {
+            console.error('Error deleting audiobook:', error);
+            alert('Failed to delete audiobook.');
+        } finally {
+            setIsLoading(false);
+        }
     };
 
     const handleCommentSubmit = async () => {
@@ -196,6 +227,8 @@ const ViewPostModal = ({ isOpen, onClose, audiobookId }: ViewPostModalProps) => 
     return (
         <Dialog open={isOpen} onOpenChange={onClose}>
             <DialogContent className="w-[1500px] max-w-[95vw] overflow-hidden p-0">
+                <DialogTitle className="sr-only">{audiobook.title}</DialogTitle>
+                <DialogDescription className="sr-only">Details and actions for the audiobook titled {audiobook.title}</DialogDescription>
                 <div className="flex h-[85vh]">
                     {/* Left: Cover Image Carousel */}
                     <div className="relative w-1/2 bg-black">
@@ -222,11 +255,6 @@ const ViewPostModal = ({ isOpen, onClose, audiobookId }: ViewPostModalProps) => 
                                         >
                                             <ChevronRight className="h-6 w-6" />
                                         </button>
-
-                                        {/* Image Counter */}
-                                        <div className="absolute bottom-4 left-1/2 -translate-x-1/2 rounded-full bg-black/50 px-3 py-1 text-sm text-white">
-                                            {currentImageIndex + 1} / {audiobook.cover_image.length}
-                                        </div>
                                     </>
                                 )}
                             </>
@@ -254,12 +282,14 @@ const ViewPostModal = ({ isOpen, onClose, audiobookId }: ViewPostModalProps) => 
                                 >
                                     <Heart className={`h-5 w-5 ${isFavorited ? 'fill-current' : ''}`} />
                                 </Button>
-                                <Button variant="ghost" className="">
+                                <Button variant="ghost" className="" onClick={handleDownload}>
                                     <Download className="h-5 w-5" />
                                 </Button>
-                                <Button variant="ghost" className="rounded-full bg-blue-800 text-white">
-                                    EDIT
-                                </Button>
+                                {auth.user && audiobook?.user?.id === auth.user.id && (
+                                    <Button variant="ghost" className="rounded-full bg-red-800 text-white" onClick={handleDelete}>
+                                        DELETE
+                                    </Button>
+                                )}
                             </div>
                         </div>
 
@@ -284,6 +314,11 @@ const ViewPostModal = ({ isOpen, onClose, audiobookId }: ViewPostModalProps) => 
                                 <div className="flex flex-col">
                                     <p className="text-lg font-bold">{audiobook.title}</p>
                                     <p className="text-sm text-gray-600">by {audiobook.author}</p>
+                                    {audiobook.generated_code && (
+                                        <p className="mt-1 rounded-md bg-blue-100 px-2 py-1 text-sm font-bold text-blue-700">
+                                            Book Code: {audiobook.generated_code}
+                                        </p>
+                                    )}
                                 </div>
 
                                 {/* Duration */}
@@ -332,6 +367,13 @@ const ViewPostModal = ({ isOpen, onClose, audiobookId }: ViewPostModalProps) => 
                     </div>
                 </div>
             </DialogContent>
+            <ConfirmationDialog
+                isOpen={showConfirmDialog}
+                onClose={() => setShowConfirmDialog(false)}
+                onConfirm={handleConfirmDelete}
+                title="Confirm Deletion"
+                description={`Are you sure you want to delete "${audiobook.title}"? This action cannot be undone.`}
+            />
         </Dialog>
     );
 };

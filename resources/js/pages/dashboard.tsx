@@ -22,30 +22,22 @@ const breadcrumbs: BreadcrumbItem[] = [
 // Mock data - replace with actual data from your backend
 const heroContent = [
     {
-        image: '/images/hero1.png',
-        title: 'Be Unique',
-        description: 'Unlock your full potential by listening to amazing audiobooks!',
+        image: '/images/1.jpg',
+        title: 'The colour of happiness',
+        description: 'Radiate joy and unleash your brilliance with every captivating listen!',
     },
     {
-        image: '/images/hero2.png',
-        title: 'Discover Stories',
-        description: 'Explore a world of captivating narratives and immersive experiences.',
+        image: '/images/2.jpg',
+        title: 'The colour of growth',
+        description: 'Let your mind wander, your heart listen, and your world bloom!',
     },
     {
-        image: '/images/hero3.jpg',
-        title: 'Learn & Grow',
-        description: 'Expand your knowledge with our carefully curated collection of audiobooks.',
+        image: '/images/3.jpg',
+        title: 'The colour of youth',
+        description: 'Tune into a world bright, bold, and beautifully your own.',
     },
-    {
-        image: '/images/hero4.jpg',
-        title: 'Share Your Voice',
-        description: 'Create and share your own stories with our global community.',
-    },
-    {
-        image: '/images/hero5.jpg',
-        title: 'Connect & Inspire',
-        description: 'Join a community of storytellers and listeners who share your passion.',
-    },
+   
+
 ];
 
 const josephWorks = [
@@ -262,12 +254,13 @@ export default function Dashboard() {
             <div className="flex h-full flex-1 flex-col gap-8">
                 {/* Section 1: Hero Carousel */}
                 <div className="relative px-10">
-                    <section className="h-[400px] w-full overflow-visible">
+                    <section className="w-full overflow-visible">
                         <Swiper
                             modules={[Autoplay, Navigation]}
                             spaceBetween={0}
                             slidesPerView={1}
                             loop={true}
+                            autoHeight={true}
                             navigation={{
                                 nextEl: '.hero-next',
                                 prevEl: '.hero-prev',
@@ -280,13 +273,13 @@ export default function Dashboard() {
                         >
                             {heroContent.map((content) => (
                                 <SwiperSlide key={content.image}>
-                                    <div className="flex h-[400px] w-full flex-col">
-                                        <div className="mb-4 flex flex-1 flex-col justify-center">
+                                    <div className="flex w-full flex-col">
+                                        <div className="mb-4 flex flex-1 flex-col items-start justify-start">
                                             <h1 className="text-4xl font-bold">{content.title}</h1>
                                             <p className="max-w-2xl text-xl">{content.description}</p>
                                         </div>
 
-                                        <img src={content.image} alt={content.title} className="h-full w-full bg-gray-600 object-contain" />
+                                        <img src={content.image} alt={content.title} className="w-full bg-gray-600" />
                                     </div>
                                 </SwiperSlide>
                             ))}
