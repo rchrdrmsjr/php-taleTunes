@@ -96,7 +96,15 @@ export default function RoomAudiobookUploadModal({ isOpen, onClose, roomId }: Ro
     const handleAudioChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
         if (file) {
-            setData('audio_file', file);
+            // Create a temporary audio element to get duration
+            const audio = new Audio(URL.createObjectURL(file));
+            audio.addEventListener('loadedmetadata', () => {
+                const minutes = Math.floor(audio.duration / 60);
+                const seconds = Math.floor(audio.duration % 60);
+                const duration = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+                setData('audio_file', file);
+                setData('duration', duration);
+            });
         }
     };
 
@@ -177,7 +185,7 @@ export default function RoomAudiobookUploadModal({ isOpen, onClose, roomId }: Ro
         <Dialog open={isOpen} onOpenChange={onClose}>
             <DialogContent className="max-h-[90vh] overflow-y-auto p-0 sm:max-w-[800px]">
                 <DialogHeader className="border-b px-6 py-4">
-                    <DialogTitle className="ml-8 text-xl font-bold text-gray-600">Add Audiobook to Room</DialogTitle>
+                    <DialogTitle className="ml-8 text-xl font-bold text-gray-600 dark:text-white">Add Audiobook to Room</DialogTitle>
                 </DialogHeader>
 
                 <div className="px-6 py-6">
@@ -186,7 +194,7 @@ export default function RoomAudiobookUploadModal({ isOpen, onClose, roomId }: Ro
                         <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
                             {/* Left: Cover Upload */}
                             <div className="md:col-span-1">
-                                <div className="flex flex-col items-center justify-center rounded-lg border-2 border-dashed border-gray-300 bg-gray-50 p-6">
+                                <div className="flex flex-col items-center justify-center rounded-lg border-2 border-dashed border-gray-300 bg-gray-50 p-6 dark:bg-transparent">
                                     <div
                                         className="flex w-full cursor-pointer flex-col items-center justify-center"
                                         onClick={() => coverInputRef.current?.click()}
@@ -395,8 +403,8 @@ export default function RoomAudiobookUploadModal({ isOpen, onClose, roomId }: Ro
                     </form>
                 </div>
 
-                <div className="flex justify-end space-x-3 border-t bg-gray-50/50 px-6 py-4">
-                    <Button type="button" variant="outline" onClick={onClose} className="text-gray-600">
+                <div className="flex justify-end space-x-3 border-t bg-gray-50/50 px-6 py-4 dark:bg-transparent">
+                    <Button type="button" variant="outline" onClick={onClose} className="text-gray-600 dark:text-white">
                         Cancel
                     </Button>
                     <Button type="submit" onClick={handleSubmit} className="bg-blue-600 text-white hover:bg-blue-700" disabled={processing}>

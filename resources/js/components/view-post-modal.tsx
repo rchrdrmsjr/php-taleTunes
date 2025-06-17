@@ -226,7 +226,7 @@ const ViewPostModal = ({ isOpen, onClose, audiobookId }: ViewPostModalProps) => 
 
     return (
         <Dialog open={isOpen} onOpenChange={onClose}>
-            <DialogContent className="w-[1500px] max-w-[95vw] overflow-hidden p-0">
+            <DialogContent className="w-[1500px] max-w-[95vw] overflow-hidden p-0 [&>button]:text-white">
                 <DialogTitle className="sr-only">{audiobook.title}</DialogTitle>
                 <DialogDescription className="sr-only">Details and actions for the audiobook titled {audiobook.title}</DialogDescription>
                 <div className="flex h-[85vh]">
@@ -255,6 +255,9 @@ const ViewPostModal = ({ isOpen, onClose, audiobookId }: ViewPostModalProps) => 
                                         >
                                             <ChevronRight className="h-6 w-6" />
                                         </button>
+                                        <div className="absolute bottom-4 left-1/2 -translate-x-1/2 rounded-full bg-black/50 px-3 py-1 text-sm text-white">
+                                            {currentImageIndex + 1}/{audiobook.cover_image.length}
+                                        </div>
                                     </>
                                 )}
                             </>
@@ -272,13 +275,13 @@ const ViewPostModal = ({ isOpen, onClose, audiobookId }: ViewPostModalProps) => 
                             />
                             <h1 className="mt-1 text-lg font-bold">{audiobook.title}</h1>
                             <div className="mt-2 flex flex-1 flex-col">
-                                <p className="text-sm text-gray-600">by {audiobook.author}</p>
+                                <p className="text-sm text-gray-600 dark:text-white">by {audiobook.author}</p>
                             </div>
                             <div className="mt-2 flex gap-2">
                                 <Button
                                     onClick={toggleFavorite}
                                     variant="ghost"
-                                    className={`flex items-center gap-2 ${isFavorited ? 'text-red-500' : 'text-black'}`}
+                                    className={`flex items-center gap-2 ${isFavorited ? 'text-red-500' : 'text-black dark:text-white'}`}
                                 >
                                     <Heart className={`h-5 w-5 ${isFavorited ? 'fill-current' : ''}`} />
                                 </Button>
@@ -298,7 +301,7 @@ const ViewPostModal = ({ isOpen, onClose, audiobookId }: ViewPostModalProps) => 
                             <img src={audiobook.user.avatar} alt={audiobook.user.name} className="h-10 w-10 rounded-full" />
                             <div>
                                 <p className="mt-2 font-medium">{audiobook.user.name}</p>
-                                <p className="mt-2 text-gray-600">{audiobook.description}</p>
+                                <p className="mt-2 text-gray-600 dark:text-white">{audiobook.description}</p>
                             </div>
                         </div>
 
@@ -313,9 +316,9 @@ const ViewPostModal = ({ isOpen, onClose, audiobookId }: ViewPostModalProps) => 
                                 {/* Title & Author */}
                                 <div className="flex flex-col">
                                     <p className="text-lg font-bold">{audiobook.title}</p>
-                                    <p className="text-sm text-gray-600">by {audiobook.author}</p>
+                                    <p className="text-sm text-gray-600 dark:text-white">by {audiobook.author}</p>
                                     {audiobook.generated_code && (
-                                        <p className="mt-1 rounded-md bg-blue-100 px-2 py-1 text-sm font-bold text-blue-700">
+                                        <p className="mt-1 rounded-md bg-blue-100 px-2 py-1 text-sm font-bold text-blue-700 dark:bg-blue-900 dark:text-white">
                                             Book Code: {audiobook.generated_code}
                                         </p>
                                     )}
@@ -332,7 +335,7 @@ const ViewPostModal = ({ isOpen, onClose, audiobookId }: ViewPostModalProps) => 
                             {audiobook.comments?.map((comment) => (
                                 <div key={comment.id} className="flex gap-4">
                                     <img src={comment.user.avatar} alt={comment.user.name} className="h-8 w-8 rounded-full" />
-                                    <div className="rounded-md bg-gray-200 p-2">
+                                    <div className="rounded-md bg-gray-200 p-2 dark:bg-black">
                                         <p className="font-bold">{comment.user.name}</p>
                                         <p className="">{comment.content}</p>
                                     </div>
@@ -358,7 +361,7 @@ const ViewPostModal = ({ isOpen, onClose, audiobookId }: ViewPostModalProps) => 
                                         placeholder="Add a comment..."
                                         className="flex-1"
                                     />
-                                    <Button className="bg-blue-800" onClick={handleCommentSubmit}>
+                                    <Button className="bg-blue-800 dark:text-white" onClick={handleCommentSubmit}>
                                         Post
                                     </Button>
                                 </>

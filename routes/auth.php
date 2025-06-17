@@ -10,9 +10,7 @@ use App\Http\Controllers\Auth\PasswordResetLinkController;
 use App\Http\Controllers\Auth\RegisteredUserController;
 use App\Http\Controllers\Auth\VerifyEmailController;
 use Illuminate\Support\Facades\Route;
-// use Laravel\WorkOS\Http\Requests\AuthKitAuthenticationRequest;
-// use Laravel\WorkOS\Http\Requests\AuthKitLoginRequest;
-// use Laravel\WorkOS\Http\Requests\AuthKitLogoutRequest;
+
 use Inertia\Inertia;
 
 Route::middleware('guest')->group(function () {
@@ -38,23 +36,12 @@ Route::middleware('guest')->group(function () {
     Route::post('reset-password', [NewPasswordController::class, 'store'])
         ->name('password.store');
 
-    // Google OAuth Routes
+    // oauth
     Route::get('auth/google/redirect', [GoogleController::class, 'redirect'])
         ->name('google.redirect');
     Route::get('auth/google/callback', [GoogleController::class, 'callback'])
         ->name('google.callback');
 
-//     Route::get('login', function (AuthKitLoginRequest $request) {
-//     return $request->redirect();
-// })->middleware(['guest'])->name('login');
-
-// Route::get('authenticate', function (AuthKitAuthenticationRequest $request) {
-//     return tap(to_route('dashboard'), fn () => $request->authenticate());
-// })->middleware(['guest']);
-
-// Route::post('logout', function (AuthKitLogoutRequest $request) {
-//     return $request->logout();
-// })->middleware(['auth'])->name('logout');
 });
 
 Route::middleware('auth')->group(function () {

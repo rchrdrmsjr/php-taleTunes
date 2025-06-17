@@ -20,7 +20,7 @@ Route::get('/', function () {
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
-    // Audiobooks routes
+    // audiobooks
     Route::prefix('audiobooks')->group(function () {
         Route::get('/all', [AudiobookController::class, 'all'])->name('audiobooks.all');
         Route::get('/search-by-code', [AudiobookController::class, 'searchByCode'])->name('audiobooks.searchByCode');
@@ -33,7 +33,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/upload', [AudiobookController::class, 'create'])->name('upload');
     Route::post('/upload', [AudiobookController::class, 'store'])->name('audiobooks.store');
 
-    // Rooms routes
+    // rooms
     Route::get('/rooms/mine', [RoomController::class, 'mine'])->name('rooms.mine');
     Route::get('/rooms/{room}', [RoomController::class, 'show'])->name('rooms.show');
     Route::post('/rooms', [RoomController::class, 'store'])->name('rooms.store');
@@ -41,13 +41,13 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('/rooms/{room}/leave', [RoomController::class, 'leave'])->name('rooms.leave');
     Route::delete('/rooms/{room}', [RoomController::class, 'destroy'])->name('rooms.destroy');
     
-    // Room audiobook routes
+    // room audiobook
     Route::get('/rooms/{room}/audiobooks', [RoomAudiobookController::class, 'index'])->name('rooms.audiobooks.index');
     Route::post('/rooms/{room}/audiobooks', [RoomAudiobookController::class, 'store'])->name('rooms.audiobooks.store');
     Route::get('/rooms/{room}/audiobooks/{audiobook}', [RoomAudiobookController::class, 'show'])->name('rooms.audiobooks.show');
     Route::delete('/rooms/{room}/audiobooks/{audiobook}', [RoomAudiobookController::class, 'destroy'])->name('rooms.audiobooks.destroy');
 
-    // Comment routes
+    // comment
     Route::post('/comments', [CommentController::class, 'store'])->name('comments.store');
     Route::delete('/comments/{comment}', [CommentController::class, 'destroy'])->name('comments.destroy');
 

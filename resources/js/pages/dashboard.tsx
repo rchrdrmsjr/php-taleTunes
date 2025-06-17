@@ -294,7 +294,7 @@ export default function Dashboard() {
                     <section className="space-y-4">
                         <div className="flex flex-col justify-between gap-2">
                             <h2 className="text-2xl font-semibold">My Favorites</h2>
-                            <p className="text-gray-600">
+                            <p className="text-gray-600 dark:text-white">
                                 {authUser?.name ? `${authUser.username}'s` : 'Your'} favorite audiobooks fuel {authUser?.username ? ' his' : ' your'}{' '}
                                 adventures, mysteries, and discoveries!
                             </p>
@@ -389,7 +389,7 @@ export default function Dashboard() {
                     <section className="space-y-4">
                         <div className="flex flex-col justify-between gap-2">
                             <h2 className="text-2xl font-semibold">Recommendations for You</h2>
-                            <p className="text-gray-600">Discover new audiobooks tailored just for you!</p>
+                            <p className="text-gray-600 dark:text-white">Discover new audiobooks tailored just for you!</p>
                         </div>
                         <div className="relative">
                             <Swiper
@@ -431,7 +431,7 @@ export default function Dashboard() {
                     <div className="swiper-button-next recommendations-next !h-12 !w-12 !rounded-full !bg-white/80 !shadow-md hover:!bg-white"></div>
                 </div>
                 {/* Footer */}
-                <div className="text-center text-sm text-gray-500">
+                <div className="text-center text-sm text-gray-500 dark:text-white">
                     <p>© 2025 TaleTunes. All rights reserved.</p>
                     <p>Discover and enjoy a world of audiobooks — anytime, anywhere.</p>
                 </div>

@@ -81,16 +81,16 @@ export default function JoinRoomModal({ isOpen, onClose }: JoinRoomModalProps) {
         <Dialog open={isOpen} onOpenChange={onClose}>
             <DialogContent className="p-0 sm:max-w-[500px]">
                 <DialogHeader className="border-b px-6 py-4">
-                    <DialogTitle className="ml-8 text-xl font-bold text-gray-600">Join Room</DialogTitle>
+                    <DialogTitle className="ml-8 text-xl font-bold text-gray-600 dark:text-white">Join Room</DialogTitle>
                     <DialogDescription>Enter the room code to join an existing room.</DialogDescription>
                 </DialogHeader>
 
                 <div className="px-6 py-6">
                     <form onSubmit={handleSubmit} className="space-y-6">
-                        <div className="rounded-lg border border-gray-200 bg-gray-50/50 p-6">
+                        <div className="rounded-lg border border-gray-200 bg-gray-50/50 dark:bg-transparent p-6">
                             <div className="space-y-3">
-                                <h3 className="text-lg font-medium text-gray-900">Room Code</h3>
-                                <p className="text-sm text-gray-600">Ask your owner for the room code, then enter it here.</p>
+                                <h3 className="text-lg font-medium text-gray-900 dark:text-white">Room Code</h3>
+                                <p className="text-sm text-gray-600 dark:text-white">Ask your owner for the room code, then enter it here.</p>
                                 <div className="pt-2">
                                     <Label htmlFor="roomCode" className="sr-only">
                                         Room Code
@@ -116,8 +116,8 @@ export default function JoinRoomModal({ isOpen, onClose }: JoinRoomModalProps) {
 
                         {/* Instructions */}
                         <div className="space-y-3">
-                            <h4 className="text-sm font-medium text-gray-700">To join a room</h4>
-                            <ul className="space-y-2 text-sm text-gray-600">
+                            <h4 className="text-sm font-medium text-gray-700 dark:text-white">To join a room</h4>
+                            <ul className="space-y-2 text-sm text-gray-600 dark:text-white">
                                 <li className="flex items-start">
                                     <span className="mr-2">•</span>
                                     <span>Use an authorized account</span>
@@ -131,14 +131,14 @@ export default function JoinRoomModal({ isOpen, onClose }: JoinRoomModalProps) {
                     </form>
                 </div>
 
-                <div className="flex justify-end space-x-3 border-t bg-gray-50/50 px-6 py-4">
-                    <Button type="button" variant="outline" onClick={onClose} className="text-gray-600">
+                <div className="flex justify-end space-x-3 border-t bg-gray-50/50 dark:bg-transparent px-6 py-4">
+                    <Button type="button" variant="outline" onClick={onClose} className="text-gray-600 dark:text-white">
                         Cancel
                     </Button>
                     <Button
                         type="submit"
                         onClick={handleSubmit}
-                        className="bg-blue-600 hover:bg-blue-700"
+                        className="bg-blue-600 hover:bg-blue-700 dark:text-white"
                         disabled={!!error || !roomCode || isSubmitting}
                     >
                         {isSubmitting ? 'Joining...' : 'Join'}

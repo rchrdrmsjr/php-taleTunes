@@ -50,79 +50,62 @@ export default function AllAudiobooks({ audiobooks = {}, categories = [] }: Prop
         <AppLayout>
             <Head title="All Audiobooks" />
             <div className="container mx-auto px-4 py-8">
-                <div className="mb-8 border-b-3 border-black pb-4">
-                    <h1 className="mb-4 text-center text-4xl font-extrabold">TALETUNES AUDIOBOOKS</h1>
+                <div className="mb-8 border-b-3 border-black pb-4 dark:border-white">
+                    <h1 className="mb-4 pb-4 text-center text-4xl font-extrabold">TALETUNES AUDIOBOOKS</h1>
                 </div>
 
                 {/* Category Sections */}
                 {categories.map((category) => {
                     const books = audiobooks[category] || [];
+
                     if (!books || books.length === 0) return null;
 
+                    const categoryId = category.toLowerCase().replace(/\s+/g, '-');
+
                     return (
-                        <div key={category} className="mb-12">
-                            <div className="mb-4 flex items-center justify-between">
-                                <h2 className="text-2xl font-semibold">{category}</h2>
-                            </div>
-                            <div className="relative">
-                                <Swiper
-                                    modules={[Navigation]}
-                                    spaceBetween={24}
-                                    slidesPerView={1}
-                                    navigation={{
-                                        prevEl: `.${category.toLowerCase()}-prev`,
-                                        nextEl: `.${category.toLowerCase()}-next`,
-                                    }}
-                                    breakpoints={{
-                                        640: { slidesPerView: 2 },
-                                        768: { slidesPerView: 3 },
-                                        1024: { slidesPerView: 4 },
-                                    }}
-                                    className="favorites"
-                                >
-                                    {books.map((book) => (
-                                        <SwiperSlide key={book.id}>
-                                            <div onClick={() => handleAudiobookClick(book.id)}>
-                                                <AudiobookCard
-                                                    title={book.title}
-                                                    author={book.user.name}
-                                                    coverImage={`/storage/${getFirstCoverImage(book.cover_image)}`}
-                                                    description={book.description}
-                                                />
-                                            </div>
-                                        </SwiperSlide>
-                                    ))}
-                                </Swiper>
-                                {/* Navigation Buttons */}
-                                <button
-                                    className={`${category.toLowerCase()}-prev absolute top-1/2 -left-8 z-10 -translate-y-1/2 transform rounded-full bg-white p-2 shadow-lg hover:bg-gray-50`}
-                                >
-                                    <svg
-                                        xmlns="http://www.w3.org/2000/svg"
-                                        fill="none"
-                                        viewBox="0 0 24 24"
-                                        strokeWidth={1.5}
-                                        stroke="currentColor"
-                                        className="h-6 w-6"
+                        <div key={category} className="relative px-10">
+                            <section className="space-y-4">
+                                <div className="flex flex-col justify-between gap-2">
+                                    <h2 className="text-2xl font-semibold">{category}</h2>
+                                    <span className="text-sm text-gray-500">{books.length} audiobooks</span>
+                                </div>
+                                <div className="relative">
+                                    <Swiper
+                                        modules={[Navigation]}
+                                        spaceBetween={24}
+                                        slidesPerView={1}
+                                        navigation={{
+                                            prevEl: `.${categoryId}-prev`,
+                                            nextEl: `.${categoryId}-next`,
+                                        }}
+                                        breakpoints={{
+                                            640: { slidesPerView: 2 },
+                                            768: { slidesPerView: 3 },
+                                            1024: { slidesPerView: 4 },
+                                        }}
+                                        className="favorites"
                                     >
-                                        <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />
-                                    </svg>
-                                </button>
-                                <button
-                                    className={`${category.toLowerCase()}-next absolute top-1/2 -right-8 z-10 -translate-y-1/2 transform rounded-full bg-white p-2 shadow-lg hover:bg-gray-50`}
-                                >
-                                    <svg
-                                        xmlns="http://www.w3.org/2000/svg"
-                                        fill="none"
-                                        viewBox="0 0 24 24"
-                                        strokeWidth={1.5}
-                                        stroke="currentColor"
-                                        className="h-6 w-6"
-                                    >
-                                        <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
-                                    </svg>
-                                </button>
-                            </div>
+                                        {books.map((book) => (
+                                            <SwiperSlide key={book.id}>
+                                                <div onClick={() => handleAudiobookClick(book.id)}>
+                                                    <AudiobookCard
+                                                        title={book.title}
+                                                        author={book.user.name}
+                                                        coverImage={`/storage/${getFirstCoverImage(book.cover_image)}`}
+                                                        description={book.description}
+                                                    />
+                                                </div>
+                                            </SwiperSlide>
+                                        ))}
+                                    </Swiper>
+                                </div>
+                            </section>
+                            <div
+                                className={`swiper-button-prev ${categoryId}-prev !h-12 !w-12 !rounded-full !bg-white !shadow-md hover:!bg-white`}
+                            ></div>
+                            <div
+                                className={`swiper-button-next ${categoryId}-next !h-12 !w-12 !rounded-full !bg-white !shadow-md hover:!bg-white`}
+                            ></div>
                         </div>
                     );
                 })}

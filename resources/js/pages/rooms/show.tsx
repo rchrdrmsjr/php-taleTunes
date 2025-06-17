@@ -100,24 +100,24 @@ export default function ShowRoom({ room }: Props) {
             <Head title={`${room.name} - Room Details`} />
 
             {/* Enhanced Background with Gradient Overlay */}
-            <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-indigo-50/40">
+            <div className="min-h-screen">
                 {/* Sophisticated Header with Breadcrumb */}
-                <div className="sticky top-0 z-40 border-b border-slate-200/60 bg-white/80 backdrop-blur-xl">
+                <div className="sticky top-0 z-40 border-b border-slate-200/60 dark:border-slate-100/60 bg-white/80 dark:bg-transparent backdrop-blur-xl">
                     <div className="container mx-auto px-6 py-4">
                         <div className="flex items-center justify-between">
                             <Button
                                 variant="ghost"
                                 onClick={() => router.visit(route('rooms.mine'))}
-                                className="group flex items-center gap-2 rounded-xl px-4 py-2 text-slate-600 transition-all duration-200 hover:bg-slate-100/80 hover:text-slate-900"
+                                className="group flex items-center gap-2 rounded-xl px-4 py-2 text-slate-600 dark:text-white transition-all duration-200 hover:bg-slate-100/80 hover:text-slate-900"
                             >
                                 <ArrowLeft className="h-4 w-4 transition-transform group-hover:-translate-x-0.5" />
-                                <span className="font-medium">Back to Rooms</span>
+                                <span className="font-medium dark:text-white">Back to Rooms</span>
                             </Button>
 
                             {/* Status Indicator */}
                             <div className="flex items-center gap-3">
                                 <div className="flex items-center gap-2 rounded-full bg-emerald-100 px-3 py-1.5 text-sm font-medium text-emerald-800">
-                                    <div className="h-2 w-2 animate-pulse rounded-full bg-emerald-500"></div>
+                                    <div className="h-2 w-2 animate-pulse rounded-full bg-green-600"></div>
                                     Live Room
                                 </div>
                             </div>
@@ -207,13 +207,13 @@ export default function ShowRoom({ room }: Props) {
                     <div className="grid grid-cols-1 gap-8 xl:grid-cols-4">
                         {/* Enhanced Audiobooks Section */}
                         <div className="xl:col-span-3">
-                            <div className="rounded-3xl border border-slate-200/60 bg-white/80 p-8 shadow-xl backdrop-blur-xl">
+                            <div className="rounded-3xl border border-slate-200/60 bg-white/80 dark:bg-transparent p-8 shadow-xl backdrop-blur-xl">
                                 <div className="mb-8 flex flex-col justify-between gap-6 sm:flex-row sm:items-center">
                                     <div>
-                                        <h2 className="mb-2 text-2xl font-bold text-slate-900">Digital Library</h2>
-                                        <p className="text-slate-600">Curated audiobook collection for this room</p>
+                                        <h2 className="mb-2 text-2xl font-bold text-slate-900 dark:text-white">Digital Library</h2>
+                                        <p className="text-slate-600 dark:text-white">Curated audiobook collection for this room</p>
                                         <div className="mt-3 flex items-center gap-2">
-                                            <span className="rounded-full bg-blue-100 px-3 py-1 text-sm font-medium text-blue-800">
+                                            <span className="rounded-full bg-blue-100 dark:bg-blue-900 px-3 py-1 text-sm font-medium text-blue-800 dark:text-white">
                                                 {room.audiobooks.length} {room.audiobooks.length === 1 ? 'Book' : 'Books'}
                                             </span>
                                             {room.audiobooks.length > 0 && (
@@ -228,7 +228,7 @@ export default function ShowRoom({ room }: Props) {
                                     {isOwner && room.audiobooks.length > 0 && (
                                         <Button
                                             onClick={() => setIsUploadModalOpen(true)}
-                                            className="group flex items-center gap-3 rounded-2xl bg-gradient-to-r from-blue-600 to-blue-800 px-6 py-3 text-base font-medium shadow-lg transition-all duration-200 hover:from-blue-700 hover:to-blue-800 hover:shadow-xl"
+                                            className="group flex items-center gap-3 rounded-2xl bg-gradient-to-r from-blue-600 to-blue-800 px-6 py-3 text-base font-medium shadow-lg transition-all duration-200 hover:from-blue-700 hover:to-blue-800 hover:shadow-xl dark:text-white"
                                         >
                                             <Upload className="h-5 w-5 transition-transform group-hover:scale-110" />
                                             Add Audiobook
@@ -245,7 +245,7 @@ export default function ShowRoom({ room }: Props) {
                                                 className="group transform cursor-pointer transition-all duration-300 hover:-translate-y-1 hover:scale-[1.02]"
                                                 style={{ animationDelay: `${index * 100}ms` }}
                                             >
-                                                <div className="rounded-2xl border border-slate-200/60 bg-white p-2 shadow-md transition-all duration-300 group-hover:shadow-xl">
+                                                <div className="rounded-2xl border border-slate-200/60 bg-white dark:bg-transparent p-2 shadow-md transition-all duration-300 group-hover:shadow-xl">
                                                     <AudiobookCard
                                                         title={audiobook.title}
                                                         author={audiobook.user.name}
@@ -257,12 +257,12 @@ export default function ShowRoom({ room }: Props) {
                                         ))}
                                     </div>
                                 ) : (
-                                    <div className="rounded-3xl border-2 border-dashed border-slate-300 bg-gradient-to-br from-slate-50 to-white p-12 text-center">
-                                        <div className="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-full bg-gradient-to-br from-blue-100 to-indigo-100">
-                                            <Upload className="h-10 w-10 text-blue-600" />
+                                    <div className="rounded-3xl border-2 border-dashed border-slate-300  p-12 text-center">
+                                        <div className="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-full bg-blue-100 dark:bg-blue-900">
+                                            <Upload className="h-10 w-10 text-blue-600 dark:text-white" />
                                         </div>
-                                        <h3 className="mb-3 text-xl font-semibold text-slate-900">Ready to Build Your Library</h3>
-                                        <p className="mx-auto mb-6 max-w-md leading-relaxed text-slate-600">
+                                        <h3 className="mb-3 text-xl font-semibold text-slate-900 dark:text-white">Ready to Build Your Library</h3>
+                                        <p className="mx-auto mb-6 max-w-md leading-relaxed text-slate-600 dark:text-white">
                                             {isOwner
                                                 ? 'Transform this space into a rich audiobook experience for your team'
                                                 : 'Waiting for the room owner to curate the first audiobook collection'}
@@ -270,7 +270,7 @@ export default function ShowRoom({ room }: Props) {
                                         {isOwner && (
                                             <Button
                                                 onClick={() => setIsUploadModalOpen(true)}
-                                                className="rounded-2xl bg-gradient-to-r from-indigo-600 to-blue-600 px-8 py-3 text-base font-medium shadow-lg transition-all duration-200 hover:from-indigo-700 hover:to-blue-700 hover:shadow-xl"
+                                                className="rounded-2xl bg-gradient-to-r from-indigo-600 to-blue-600 px-8 py-3 text-base font-medium shadow-lg transition-all duration-200 hover:from-indigo-700 hover:to-blue-700 hover:shadow-xl dark:text-white"
                                             >
                                                 Launch Your Library
                                             </Button>
@@ -282,14 +282,14 @@ export default function ShowRoom({ room }: Props) {
 
                         {/* Premium Members Section */}
                         <div className="xl:col-span-1">
-                            <div className="rounded-3xl border border-slate-200/60 bg-white/80 p-6 shadow-xl backdrop-blur-xl">
+                            <div className="rounded-3xl border border-slate-200/60  p-6 shadow-xl backdrop-blur-xl">
                                 <div className="mb-6 flex items-center justify-between">
                                     <div>
-                                        <h2 className="flex items-center gap-2 text-xl font-bold text-slate-900">
-                                            <Shield className="h-5 w-5 text-blue-600" />
+                                        <h2 className="flex items-center gap-2 text-xl font-bold text-slate-900 dark:text-white">
+                                            <Shield className="h-5 w-5 text-blue-600 dark:text-white" />
                                             Team Members
                                         </h2>
-                                        <p className="mt-1 text-sm text-slate-600">Active collaborators</p>
+                                        <p className="mt-1 text-sm text-slate-600 dark:text-white">Active collaborators</p>
                                     </div>
                                     <span className="rounded-full bg-slate-100 px-3 py-1 text-sm font-medium text-slate-800">
                                         {room.members.length}
@@ -337,7 +337,7 @@ export default function ShowRoom({ room }: Props) {
                                                             </span>
                                                         )}
                                                     </div>
-                                                    <div className="flex items-center gap-1 text-xs text-slate-500">
+                                                    <div className="flex items-center gap-1 text-xs text-slate-500 dark:text-black">
                                                         <Calendar className="h-3 w-3" />
                                                         <span>Joined {joinedDate}</span>
                                                     </div>
@@ -348,12 +348,12 @@ export default function ShowRoom({ room }: Props) {
                                 </div>
 
                                 {/* Team Insights */}
-                                <div className="mt-6 rounded-2xl border border-blue-200/60 bg-gradient-to-br from-blue-50 to-indigo-50 p-4">
-                                    <h4 className="mb-2 flex items-center gap-2 font-semibold text-slate-900">
-                                        <Users className="h-4 w-4 text-blue-600" />
+                                <div className="mt-6 rounded-2xl border border-blue-200/60  p-4">
+                                    <h4 className="mb-2 flex items-center gap-2 font-semibold text-slate-900 dark:text-white">
+                                        <Users className="h-4 w-4 text-blue-600 dark:text-white" />
                                         Team Insights
                                     </h4>
-                                    <div className="space-y-2 text-sm text-slate-600">
+                                    <div className="space-y-2 text-sm text-slate-600 dark:text-white">
                                         <div className="flex justify-between">
                                             <span>Active since:</span>
                                             <span className="font-medium">{stats.establishedDays} days ago</span>

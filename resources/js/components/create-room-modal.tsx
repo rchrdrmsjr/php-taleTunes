@@ -94,14 +94,14 @@ export default function CreateRoomModal({ isOpen, onClose }: CreateRoomModalProp
         <Dialog open={isOpen} onOpenChange={onClose}>
             <DialogContent className="p-0 sm:max-w-[500px]">
                 <DialogHeader className="border-b px-6 py-4">
-                    <DialogTitle className="ml-8 text-xl font-bold text-gray-600">Create Room</DialogTitle>
+                    <DialogTitle className="ml-8 text-xl font-bold text-gray-600 dark:text-white">Create Room</DialogTitle>
                     <DialogDescription>Fill in the details to create your new room.</DialogDescription>
                 </DialogHeader>
 
                 <div className="px-6 py-6">
                     <form onSubmit={handleSubmit} className="space-y-6">
-                        <div className="rounded-lg border border-gray-200 bg-gray-50/50 p-6">
-                            <h3 className="mb-4 text-lg font-medium text-gray-900">Room Information</h3>
+                        <div className="rounded-lg border border-gray-200 bg-gray-50/50 dark:bg-transparent p-6">
+                            <h3 className="mb-4 text-lg font-medium text-gray-900 dark:text-white">Room Information</h3>
                             <div className="space-y-4">
                                 <div>
                                     <Label htmlFor="roomName" className="sr-only">
@@ -127,7 +127,7 @@ export default function CreateRoomModal({ isOpen, onClose }: CreateRoomModalProp
                                         value={description}
                                         onChange={handleDescriptionChange}
                                         placeholder="Room Description"
-                                        className="min-h-[120px] resize-none border-gray-300 bg-white"
+                                        className="min-h-[120px] resize-none border-gray-300 bg-white dark:bg-transparent"
                                         maxLength={maxChars}
                                     />
                                     <div className="absolute right-2 bottom-2 text-xs text-gray-400">
@@ -139,8 +139,8 @@ export default function CreateRoomModal({ isOpen, onClose }: CreateRoomModalProp
                     </form>
                 </div>
 
-                <div className="flex justify-end space-x-3 border-t bg-gray-50/50 px-6 py-4">
-                    <Button type="button" variant="outline" onClick={onClose} className="text-gray-600">
+                <div className="flex justify-end space-x-3 border-t bg-gray-50/50 dark:bg-transparent px-6 py-4">
+                    <Button type="button" variant="outline" onClick={onClose} className="text-gray-600 dark:text-white">
                         Cancel
                     </Button>
                     <Button

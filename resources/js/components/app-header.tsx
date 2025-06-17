@@ -18,7 +18,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/comp
 import { UserMenuContent } from '@/components/user-menu-content';
 import { useInitials } from '@/hooks/use-initials';
 import { type BreadcrumbItem, type NavItem, type SharedData } from '@/types';
-import { Link, router, usePage } from '@inertiajs/react';
+import { Head, Link, router, usePage } from '@inertiajs/react';
 import {
     BookAudio,
     BookOpen,
@@ -109,13 +109,13 @@ export function AppHeader({ breadcrumbs = [] }: AppHeaderProps) {
         },
     ];
 
-    const toggleSearch = () => {
-        setIsSearchVisible(!isSearchVisible);
-        if (isSearchVisible) {
-            // If closing, clear search term
-            setSearchTerm('');
-        }
-    };
+    // const toggleSearch = () => {
+    //     setIsSearchVisible(!isSearchVisible);
+    //     if (isSearchVisible) {
+    //         // If closing, clear search term
+    //         setSearchTerm('');
+    //     }
+    // };
 
     const handleSearchSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
@@ -144,6 +144,9 @@ export function AppHeader({ breadcrumbs = [] }: AppHeaderProps) {
 
     return (
         <>
+            <Head>
+                <link rel="icon" type="image/png" href="/images/Logo.png" />
+            </Head>
             <div className="border-sidebar-border/80 border-b">
                 <div className="mx-auto flex h-16 items-center gap-2 px-4 md:max-w-7xl md:gap-4">
                     {' '}

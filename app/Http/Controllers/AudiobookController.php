@@ -374,7 +374,9 @@ class AudiobookController extends Controller
             'code' => 'required|string|max:255',
         ]);
 
-        $audiobook = Audiobook::where('generated_code', $request->code)->first();
+        $audiobook = Audiobook::where('generated_code', $request->code)
+            ->where('is_public', 1)
+            ->first();
 
         if (!$audiobook) {
             return response()->json(['error' => 'Audiobook not found.'], 404);

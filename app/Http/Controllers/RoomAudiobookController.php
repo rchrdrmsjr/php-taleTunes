@@ -53,6 +53,7 @@ class RoomAudiobookController extends Controller
                 'cover_image.*' => 'required|image|mimes:jpeg,jpg,png|max:51200', // 50MB max per image
                 'cover_image' => 'required|array|min:1|max:10', // Max 10 images
                 'audio_file' => 'required|file|mimes:mp3|max:51200', // 50MB max
+                'duration' => 'required|string', // Duration in seconds
                 'category' => 'required|string|in:Fantasy,Romance,Motivation,Horror,Non-Fiction,Memoir,Science Fiction,Mystery,Historical Fiction',
                 'generated_code' => 'nullable|string|max:255',
             ], [
@@ -62,6 +63,7 @@ class RoomAudiobookController extends Controller
                 'cover_image.array' => 'The cover image must be an array.',
                 'cover_image.min' => 'Please select at least one cover image.',
                 'cover_image.max' => 'You can upload maximum 10 images.',
+                'duration.required' => 'Audio duration is required.',
             ]);
 
             Log::info('Validation passed', ['validated_data' => $validated]);
@@ -109,6 +111,7 @@ class RoomAudiobookController extends Controller
                 'cover_image' => json_encode($coverPaths),
                 'audio_file' => $audioPath,
                 'category' => $validated['category'],
+                'duration' => $validated['duration'],
                 'is_public' => false, // Always false for room audiobooks
                 'user_id' => auth()->id(),
                 'generated_code' => $request->generated_code ?? null,

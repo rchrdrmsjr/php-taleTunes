@@ -22,10 +22,10 @@ export default function AuthModal({ isOpen, onClose, status, canResetPassword }:
         onClose();
     };
 
-    const handleGoogleSignIn = () => {
-        // Implement Google sign-in logic here
-        window.location.href = route('auth.google');
-    };
+    // const handleGoogleSignIn = () => {
+    //     // Implement Google sign-in logic here
+    //     window.location.href = route('auth.google');
+    // };
 
     return (
         <>

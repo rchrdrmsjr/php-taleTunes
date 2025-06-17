@@ -64,6 +64,7 @@ export default function Upload() {
         category: '',
         is_public: true,
         author: '',
+        duration: '',
         generated_code: '',
     });
 

@@ -22,6 +22,7 @@ export const HorizontalAudiobookCard: FC<HorizontalAudiobookCardProps> = ({
         gap-4
         border border-gray-200
         bg-gray-300
+        dark:bg-black
         shadow-sm
         transition-all hover:shadow-md
       "
@@ -38,11 +39,11 @@ export const HorizontalAudiobookCard: FC<HorizontalAudiobookCardProps> = ({
       {/* Text Container */}
       <div className="flex flex-col  py-6 px-4 text-sm leading-[1.25rem] flex-1 min-w-0">
         <div>
-          <h3 className="text-lg font-semibold text-gray-900 truncate">{title}</h3>
-          <p className="text-gray-600">{author}</p>
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-white truncate">{title}</h3>
+          <p className="text-gray-600 dark:text-white">{author}</p>
         </div>
 
-        <p className="mt-2 text-gray-700 line-clamp-5">
+        <p className="mt-2 text-gray-700 dark:text-white line-clamp-5">
           {description}
         </p>
       </div>

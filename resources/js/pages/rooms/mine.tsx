@@ -62,8 +62,8 @@ export default function MyRooms({ ownedRooms = [], joinedRooms = [] }: Props) {
     const RoomCard = ({ room, isOwner }: { room: Room; isOwner: boolean }) => (
         <div className="flex h-48 w-full items-center gap-6 rounded-xl border border-gray-200 p-6 shadow-sm transition-all hover:shadow-md">
             {/* Room Avatar */}
-            <div className="relative flex h-24 w-24 flex-shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-blue-50 to-indigo-50">
-                <div className="flex h-16 w-16 items-center justify-center rounded-lg bg-white text-2xl font-semibold text-blue-600">
+            <div className="relative flex h-24 w-24 flex-shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-blue-900 to-indigo-500">
+                <div className="flex h-16 w-16 items-center justify-center rounded-lg bg-white dark:bg-blue-900 text-2xl font-semibold text-blue-600 dark:text-white">
                     {getUserInitials(room.name)}
                 </div>
                 {isOwner && (
@@ -76,9 +76,9 @@ export default function MyRooms({ ownedRooms = [], joinedRooms = [] }: Props) {
             {/* Room Info */}
             <div className="flex flex-1 flex-col justify-between">
                 <div>
-                    <h3 className="text-xl font-semibold text-gray-900">{room.name}</h3>
+                    <h3 className="text-xl font-semibold text-gray-900 dark:text-white">{room.name}</h3>
                     <div className="mt-1 flex items-center gap-2">
-                        <span className="rounded-full bg-blue-100 px-2 py-0.5 text-xs font-medium text-blue-800">Code: {room.room_code}</span>
+                        <span className="rounded-full bg-blue-100 dark:bg-blue-900 px-2 py-0.5 text-xs font-medium text-blue-800 dark:text-white">Code: {room.room_code}</span>
                         <span className="flex items-center gap-1 rounded-full bg-gray-100 px-2 py-0.5 text-xs font-medium text-gray-800">
                             <Users className="h-3 w-3" />
                             {room.members.length} members
@@ -88,7 +88,7 @@ export default function MyRooms({ ownedRooms = [], joinedRooms = [] }: Props) {
                 </div>
 
                 <div className="flex items-center justify-between">
-                    <p className="text-sm text-gray-600">
+                    <p className="text-sm text-gray-600 dark:text-white">
                         Owner: <span className="font-medium">{room.owner.name}</span>
                     </p>
                     <div className="flex gap-2">
@@ -134,7 +134,7 @@ export default function MyRooms({ ownedRooms = [], joinedRooms = [] }: Props) {
                 {/* Owned Rooms */}
                 {ownedRooms.length > 0 && (
                     <div className="mb-8">
-                        <h2 className="mb-4 text-2xl font-bold text-gray-900">My Created Rooms</h2>
+                        <h2 className="mb-4 text-2xl font-bold text-gray-900 dark:text-white">My Created Rooms</h2>
                         <div className="grid gap-4">
                             {ownedRooms.map((room) => (
                                 <RoomCard key={room.id} room={room} isOwner={true} />
@@ -146,7 +146,7 @@ export default function MyRooms({ ownedRooms = [], joinedRooms = [] }: Props) {
                 {/* Joined Rooms */}
                 {joinedRooms.length > 0 && (
                     <div>
-                        <h2 className="mb-4 text-2xl font-bold text-gray-900">Joined Rooms</h2>
+                        <h2 className="mb-4 text-2xl font-bold text-gray-900 dark:text-white">Joined Rooms</h2>
                         <div className="grid gap-4">
                             {joinedRooms.map((room) => (
                                 <RoomCard key={room.id} room={room} isOwner={false} />
