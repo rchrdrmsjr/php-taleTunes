@@ -3,8 +3,9 @@ import { HorizontalAudiobookCard } from '@/components/ui/horizontal-audiobook-ca
 import ViewPostModal from '@/components/view-post-modal';
 import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem } from '@/types';
-import { Head, usePage } from '@inertiajs/react';
+import { Head, router, usePage } from '@inertiajs/react';
 import { useEffect, useRef, useState } from 'react';
+import { Toaster } from 'sonner';
 import 'swiper/css';
 import 'swiper/css/autoplay';
 import 'swiper/css/navigation';
@@ -36,8 +37,6 @@ const heroContent = [
         title: 'The colour of youth',
         description: 'Tune into a world bright, bold, and beautifully your own.',
     },
-   
-
 ];
 
 const josephWorks = [
@@ -165,10 +164,57 @@ export default function Dashboard() {
     const [josephWorksCanScrollRight, setJosephWorksCanScrollRight] = useState(false);
 
     // Get audiobooks from backend
-    const userAudiobooks = (usePage().props as any)?.userAudiobooks ?? [];
+    const initialUserAudiobooks = (usePage().props as any)?.userAudiobooks ?? [];
     const otherAudiobooks = (usePage().props as any)?.otherAudiobooks ?? [];
-    const favoriteAudiobooks = (usePage().props as any)?.favoriteAudiobooks ?? [];
+    const initialFavoriteAudiobooks = (usePage().props as any)?.favoriteAudiobooks ?? [];
     const authUser = (usePage().props as any)?.auth?.user;
+
+    // Local state for user audiobooks to enable real-time updates
+    const [userAudiobooks, setUserAudiobooks] = useState(initialUserAudiobooks);
+    // Local state for favorite audiobooks to enable real-time updates
+    const [favoriteAudiobooks, setFavoriteAudiobooks] = useState(initialFavoriteAudiobooks);
+    // State for visual feedback when favorites update
+    const [favoritesHighlight, setFavoritesHighlight] = useState(false);
+
+    // Update local state when props change
+    useEffect(() => {
+        setUserAudiobooks(initialUserAudiobooks);
+    }, [initialUserAudiobooks]);
+
+    useEffect(() => {
+        setFavoriteAudiobooks(initialFavoriteAudiobooks);
+    }, [initialFavoriteAudiobooks]);
+
+    // Callback function to handle audiobook deletion
+    const handleAudiobookDeleted = (deletedAudiobookId: number) => {
+        // Remove the deleted audiobook from local state immediately
+        setUserAudiobooks((prev: any[]) => prev.filter((book: any) => book.id !== deletedAudiobookId));
+
+        // Also refresh other sections that might be affected
+        router.reload({ only: ['otherAudiobooks', 'favoriteAudiobooks'] });
+    };
+
+    // Callback function to handle audiobook like/unlike
+    const handleAudiobookLiked = (audiobookId: number, isLiked: boolean) => {
+        // Update favorites section immediately
+        if (isLiked) {
+            // Add to favorites if not already there
+            const audiobookToAdd =
+                otherAudiobooks.find((book: any) => book.id === audiobookId) || userAudiobooks.find((book: any) => book.id === audiobookId);
+            if (audiobookToAdd && !favoriteAudiobooks.some((book: any) => book.id === audiobookId)) {
+                setFavoriteAudiobooks((prev: any[]) => [...prev, audiobookToAdd]);
+                // Add visual feedback
+                setFavoritesHighlight(true);
+                setTimeout(() => setFavoritesHighlight(false), 1000);
+            }
+        } else {
+            // Remove from favorites immediately
+            setFavoriteAudiobooks((prev: any[]) => prev.filter((book: any) => book.id !== audiobookId));
+            // Add visual feedback
+            setFavoritesHighlight(true);
+            setTimeout(() => setFavoritesHighlight(false), 1000);
+        }
+    };
 
     // Shuffle recommendations when component mounts or otherAudiobooks changes
     useEffect(() => {
@@ -251,6 +297,7 @@ export default function Dashboard() {
     return (
         <AppLayout>
             <Head title="Dashboard" />
+            <Toaster position="top-right" />
             <div className="flex h-full flex-1 flex-col gap-8">
                 {/* Section 1: Hero Carousel */}
                 <div className="relative px-10">
@@ -290,7 +337,9 @@ export default function Dashboard() {
                 </div>
 
                 {/* Section 2: Favorites */}
-                <div className="relative px-10">
+                <div
+                    className={`relative px-10 transition-all duration-300 ${favoritesHighlight ? 'rounded-lg bg-green-50 dark:bg-green-900/20' : ''}`}
+                >
                     <section className="space-y-4">
                         <div className="flex flex-col justify-between gap-2">
                             <h2 className="text-2xl font-semibold">My Favorites</h2>
@@ -444,6 +493,8 @@ export default function Dashboard() {
                         setSelectedAudiobookId(null);
                     }}
                     audiobookId={selectedAudiobookId}
+                    onAudiobookDeleted={handleAudiobookDeleted}
+                    onAudiobookLiked={handleAudiobookLiked}
                 />
             </div>
         </AppLayout>

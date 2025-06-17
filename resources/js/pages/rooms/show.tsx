@@ -6,7 +6,8 @@ import AppLayout from '@/layouts/app-layout';
 import { type SharedData } from '@/types';
 import { Head, router, usePage } from '@inertiajs/react';
 import { ArrowLeft, BadgeCheck, Calendar, Crown, Shield, Star, Upload, Users, Zap } from 'lucide-react';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import { Toaster } from 'sonner';
 
 interface Room {
     id: number;
@@ -45,6 +46,14 @@ export default function ShowRoom({ room }: Props) {
     const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
     const [isViewModalOpen, setIsViewModalOpen] = useState(false);
     const [selectedAudiobookId, setSelectedAudiobookId] = useState<number | null>(null);
+
+    // Local state for room audiobooks to enable real-time updates
+    const [roomAudiobooks, setRoomAudiobooks] = useState(room.audiobooks);
+
+    // Update local state when props change
+    useEffect(() => {
+        setRoomAudiobooks(room.audiobooks);
+    }, [room.audiobooks]);
 
     const handleLeaveRoom = async () => {
         if (confirm('Are you sure you want to leave this room?')) {
@@ -85,11 +94,26 @@ export default function ShowRoom({ room }: Props) {
         setIsViewModalOpen(true);
     };
 
+    // Callback function to handle audiobook deletion
+    const handleAudiobookDeleted = (deletedAudiobookId: number) => {
+        // Remove the deleted audiobook from local state immediately
+        setRoomAudiobooks((prev: any[]) => prev.filter((book: any) => book.id !== deletedAudiobookId));
+
+        // Refresh the room data to update counts and other sections
+        router.reload({ only: ['room'] });
+    };
+
+    // Callback function to handle audiobook like/unlike
+    const handleAudiobookLiked = (audiobookId: number, isLiked: boolean) => {
+        // Refresh the room data to update any related counts
+        router.reload({ only: ['room'] });
+    };
+
     // Enhanced utility functions for corporate features
     const getRoomStats = () => ({
-        totalBooks: room.audiobooks.length,
+        totalBooks: roomAudiobooks.length,
         totalMembers: room.members.length,
-        recentActivity: room.audiobooks.length > 0 ? 'Active' : 'Quiet',
+        recentActivity: roomAudiobooks.length > 0 ? 'Active' : 'Quiet',
         establishedDays: Math.floor((Date.now() - new Date(room.members[0]?.pivot.joined_at || Date.now()).getTime()) / (1000 * 60 * 60 * 24)),
     });
 
@@ -98,17 +122,16 @@ export default function ShowRoom({ room }: Props) {
     return (
         <AppLayout>
             <Head title={`${room.name} - Room Details`} />
-
-            {/* Enhanced Background with Gradient Overlay */}
-            <div className="min-h-screen">
+            <Toaster position="top-right" />
+            <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900">
                 {/* Sophisticated Header with Breadcrumb */}
-                <div className="sticky top-0 z-40 border-b border-slate-200/60 dark:border-slate-100/60 bg-white/80 dark:bg-transparent backdrop-blur-xl">
+                <div className="sticky top-0 z-40 border-b border-slate-200/60 bg-white/80 backdrop-blur-xl dark:border-slate-100/60 dark:bg-transparent">
                     <div className="container mx-auto px-6 py-4">
                         <div className="flex items-center justify-between">
                             <Button
                                 variant="ghost"
                                 onClick={() => router.visit(route('rooms.mine'))}
-                                className="group flex items-center gap-2 rounded-xl px-4 py-2 text-slate-600 dark:text-white transition-all duration-200 hover:bg-slate-100/80 hover:text-slate-900"
+                                className="group flex items-center gap-2 rounded-xl px-4 py-2 text-slate-600 transition-all duration-200 hover:bg-slate-100/80 hover:text-slate-900 dark:text-white"
                             >
                                 <ArrowLeft className="h-4 w-4 transition-transform group-hover:-translate-x-0.5" />
                                 <span className="font-medium dark:text-white">Back to Rooms</span>
@@ -207,16 +230,16 @@ export default function ShowRoom({ room }: Props) {
                     <div className="grid grid-cols-1 gap-8 xl:grid-cols-4">
                         {/* Enhanced Audiobooks Section */}
                         <div className="xl:col-span-3">
-                            <div className="rounded-3xl border border-slate-200/60 bg-white/80 dark:bg-transparent p-8 shadow-xl backdrop-blur-xl">
+                            <div className="rounded-3xl border border-slate-200/60 bg-white/80 p-8 shadow-xl backdrop-blur-xl dark:bg-transparent">
                                 <div className="mb-8 flex flex-col justify-between gap-6 sm:flex-row sm:items-center">
                                     <div>
                                         <h2 className="mb-2 text-2xl font-bold text-slate-900 dark:text-white">Digital Library</h2>
                                         <p className="text-slate-600 dark:text-white">Curated audiobook collection for this room</p>
                                         <div className="mt-3 flex items-center gap-2">
-                                            <span className="rounded-full bg-blue-100 dark:bg-blue-900 px-3 py-1 text-sm font-medium text-blue-800 dark:text-white">
-                                                {room.audiobooks.length} {room.audiobooks.length === 1 ? 'Book' : 'Books'}
+                                            <span className="rounded-full bg-blue-100 px-3 py-1 text-sm font-medium text-blue-800 dark:bg-blue-900 dark:text-white">
+                                                {roomAudiobooks.length} {roomAudiobooks.length === 1 ? 'Book' : 'Books'}
                                             </span>
-                                            {room.audiobooks.length > 0 && (
+                                            {roomAudiobooks.length > 0 && (
                                                 <span className="rounded-full bg-emerald-100 px-3 py-1 text-sm font-medium text-emerald-800">
                                                     <Star className="mr-1 inline h-3 w-3" />
                                                     Premium Collection
@@ -225,7 +248,7 @@ export default function ShowRoom({ room }: Props) {
                                         </div>
                                     </div>
 
-                                    {isOwner && room.audiobooks.length > 0 && (
+                                    {isOwner && roomAudiobooks.length > 0 && (
                                         <Button
                                             onClick={() => setIsUploadModalOpen(true)}
                                             className="group flex items-center gap-3 rounded-2xl bg-gradient-to-r from-blue-600 to-blue-800 px-6 py-3 text-base font-medium shadow-lg transition-all duration-200 hover:from-blue-700 hover:to-blue-800 hover:shadow-xl dark:text-white"
@@ -236,16 +259,16 @@ export default function ShowRoom({ room }: Props) {
                                     )}
                                 </div>
 
-                                {room.audiobooks.length > 0 ? (
+                                {roomAudiobooks.length > 0 ? (
                                     <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3">
-                                        {room.audiobooks.map((audiobook, index) => (
+                                        {roomAudiobooks.map((audiobook, index) => (
                                             <div
                                                 key={audiobook.id}
                                                 onClick={() => handleAudiobookClick(audiobook.id)}
                                                 className="group transform cursor-pointer transition-all duration-300 hover:-translate-y-1 hover:scale-[1.02]"
                                                 style={{ animationDelay: `${index * 100}ms` }}
                                             >
-                                                <div className="rounded-2xl border border-slate-200/60 bg-white dark:bg-transparent p-2 shadow-md transition-all duration-300 group-hover:shadow-xl">
+                                                <div className="rounded-2xl border border-slate-200/60 bg-white p-2 shadow-md transition-all duration-300 group-hover:shadow-xl dark:bg-transparent">
                                                     <AudiobookCard
                                                         title={audiobook.title}
                                                         author={audiobook.user.name}
@@ -257,7 +280,7 @@ export default function ShowRoom({ room }: Props) {
                                         ))}
                                     </div>
                                 ) : (
-                                    <div className="rounded-3xl border-2 border-dashed border-slate-300  p-12 text-center">
+                                    <div className="rounded-3xl border-2 border-dashed border-slate-300 p-12 text-center">
                                         <div className="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-full bg-blue-100 dark:bg-blue-900">
                                             <Upload className="h-10 w-10 text-blue-600 dark:text-white" />
                                         </div>
@@ -282,7 +305,7 @@ export default function ShowRoom({ room }: Props) {
 
                         {/* Premium Members Section */}
                         <div className="xl:col-span-1">
-                            <div className="rounded-3xl border border-slate-200/60  p-6 shadow-xl backdrop-blur-xl">
+                            <div className="rounded-3xl border border-slate-200/60 p-6 shadow-xl backdrop-blur-xl">
                                 <div className="mb-6 flex items-center justify-between">
                                     <div>
                                         <h2 className="flex items-center gap-2 text-xl font-bold text-slate-900 dark:text-white">
@@ -348,7 +371,7 @@ export default function ShowRoom({ room }: Props) {
                                 </div>
 
                                 {/* Team Insights */}
-                                <div className="mt-6 rounded-2xl border border-blue-200/60  p-4">
+                                <div className="mt-6 rounded-2xl border border-blue-200/60 p-4">
                                     <h4 className="mb-2 flex items-center gap-2 font-semibold text-slate-900 dark:text-white">
                                         <Users className="h-4 w-4 text-blue-600 dark:text-white" />
                                         Team Insights
@@ -390,6 +413,8 @@ export default function ShowRoom({ room }: Props) {
                     setSelectedAudiobookId(null);
                 }}
                 audiobookId={selectedAudiobookId}
+                onAudiobookDeleted={handleAudiobookDeleted}
+                onAudiobookLiked={handleAudiobookLiked}
             />
         </AppLayout>
     );

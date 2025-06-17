@@ -13,7 +13,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Progress } from '@inertiajs/core';
-import { useForm } from '@inertiajs/react';
+import { router, useForm } from '@inertiajs/react';
 import { CheckIcon, ChevronDownIcon, ImageIcon } from 'lucide-react';
 import { useRef, useState } from 'react';
 import { toast, Toaster } from 'sonner';
@@ -168,6 +168,8 @@ export default function RoomAudiobookUploadModal({ isOpen, onClose, roomId }: Ro
                 toast.success('Audiobook added to room successfully!');
                 clearAllFields();
                 onClose();
+                // Refresh the room data to show the new audiobook
+                router.reload({ only: ['room', 'audiobooks'] });
             },
             onError: (errors: AudiobookFormErrors) => {
                 if (toastId) {

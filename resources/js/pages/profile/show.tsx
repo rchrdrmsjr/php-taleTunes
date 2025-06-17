@@ -2,9 +2,10 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import ViewPostModal from '@/components/view-post-modal';
 import { useInitials } from '@/hooks/use-initials';
 import AppLayout from '@/layouts/app-layout';
-import { Head, Link, usePage } from '@inertiajs/react';
+import { Head, Link, router, usePage } from '@inertiajs/react';
 import { Globe, Lock, Settings } from 'lucide-react';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import { Toaster } from 'sonner';
 // Assuming you have route helper available globally or imported
 
 // Helper function to get first cover image
@@ -53,8 +54,15 @@ export default function Show({ user, audiobooks, roomCount, favoritesCount }: Pr
     const page = usePage();
     const authUser = (page.props as any)?.auth?.user;
     const getInitials = useInitials();
+
     // Use the passed audiobooks prop if available, otherwise fallback
-    const books = audiobooks ?? (page.props as any).audiobooks ?? [];
+    const initialBooks = audiobooks ?? (page.props as any).audiobooks ?? [];
+    const [books, setBooks] = useState(initialBooks);
+
+    // Update local state when props change
+    useEffect(() => {
+        setBooks(initialBooks);
+    }, [initialBooks]);
 
     // Tab state: 'public' or 'private'
     const [activeTab, setActiveTab] = useState<'public' | 'private'>('public');
@@ -71,9 +79,25 @@ export default function Show({ user, audiobooks, roomCount, favoritesCount }: Pr
         setIsViewModalOpen(true);
     };
 
+    // Callback function to handle audiobook deletion
+    const handleAudiobookDeleted = (deletedAudiobookId: number) => {
+        // Remove the deleted audiobook from local state immediately
+        setBooks((prev: any[]) => prev.filter((book: any) => book.id !== deletedAudiobookId));
+
+        // Refresh the page data to update counts and other sections
+        router.reload({ only: ['audiobooks', 'roomCount', 'favoritesCount'] });
+    };
+
+    // Callback function to handle audiobook like/unlike
+    const handleAudiobookLiked = (audiobookId: number, isLiked: boolean) => {
+        // Refresh the page data to update favorites count
+        router.reload({ only: ['favoritesCount'] });
+    };
+
     return (
         <AppLayout>
             <Head title={`${user.name} (@${user.username})`} />
+            <Toaster position="top-right" />
             <div className="w-full px-6 pt-12 sm:px-10">
                 {/* Profile Header */}
                 <div className="flex justify-center pb-2">
@@ -179,6 +203,8 @@ export default function Show({ user, audiobooks, roomCount, favoritesCount }: Pr
                         setSelectedAudiobookId(null);
                     }}
                     audiobookId={selectedAudiobookId}
+                    onAudiobookDeleted={handleAudiobookDeleted}
+                    onAudiobookLiked={handleAudiobookLiked}
                 />
             </div>
         </AppLayout>

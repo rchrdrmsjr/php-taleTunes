@@ -6,6 +6,7 @@ import { usePage } from '@inertiajs/react';
 import axios from 'axios';
 import { ChevronLeft, ChevronRight, Download, Heart, Pause, Play } from 'lucide-react';
 import { useEffect, useState } from 'react';
+import { toast } from 'sonner';
 import ConfirmationDialog from './confirmation-dialog';
 
 interface Audiobook {
@@ -43,9 +44,11 @@ interface ViewPostModalProps {
     isOpen: boolean;
     onClose: () => void;
     audiobookId: number | null;
+    onAudiobookDeleted?: (deletedAudiobookId: number) => void;
+    onAudiobookLiked?: (audiobookId: number, isLiked: boolean) => void;
 }
 
-const ViewPostModal = ({ isOpen, onClose, audiobookId }: ViewPostModalProps) => {
+const ViewPostModal = ({ isOpen, onClose, audiobookId, onAudiobookDeleted, onAudiobookLiked }: ViewPostModalProps) => {
     const { auth } = usePage<SharedData>().props;
     const [audiobook, setAudiobook] = useState<Audiobook | null>(null);
     const [isPlaying, setIsPlaying] = useState(false);
@@ -56,6 +59,7 @@ const ViewPostModal = ({ isOpen, onClose, audiobookId }: ViewPostModalProps) => 
     const [isFavorited, setIsFavorited] = useState(false);
     const [showConfirmDialog, setShowConfirmDialog] = useState(false);
     const [isUpdated, setIsUpdated] = useState(false);
+    const [isLikeLoading, setIsLikeLoading] = useState(false);
 
     // Helper function to get cover images
     const getCoverImages = (coverImage: string | string[]): string[] => {
@@ -111,8 +115,14 @@ const ViewPostModal = ({ isOpen, onClose, audiobookId }: ViewPostModalProps) => 
                 setIsFavorited(false);
             }
             setCurrentImageIndex(0);
-        } catch (error) {
+        } catch (error: any) {
             console.error('Error fetching audiobook:', error);
+            if (error.response?.status === 404) {
+                toast.error('Audiobook not found. It may have been deleted. Please refresh the page!');
+                onClose();
+            } else {
+                toast.error('Failed to load audiobook details.');
+            }
         } finally {
             setIsLoading(false);
         }
@@ -136,6 +146,7 @@ const ViewPostModal = ({ isOpen, onClose, audiobookId }: ViewPostModalProps) => 
         const userId = auth.user.id;
 
         try {
+            setIsLikeLoading(true);
             const response = await axios.post(
                 route('audiobooks.toggle-favorite', { audiobook: audiobook.id }),
                 {},
@@ -162,8 +173,19 @@ const ViewPostModal = ({ isOpen, onClose, audiobookId }: ViewPostModalProps) => 
 
             // Force a re-render by updating the isFavorited state
             setIsFavorited((prev) => !prev);
+
+            // Call the callback to notify parent component about the change
+            if (onAudiobookLiked) {
+                onAudiobookLiked(audiobook.id, !isFavorited);
+            }
+
+            // Show success notification
+            toast.success(!isFavorited ? 'Added to favorites!' : 'Removed from favorites!');
         } catch (error) {
             console.error('Error toggling favorite:', error);
+            toast.error('Failed to update favorite status.');
+        } finally {
+            setIsLikeLoading(false);
         }
     };
 
@@ -194,10 +216,19 @@ const ViewPostModal = ({ isOpen, onClose, audiobookId }: ViewPostModalProps) => 
             setShowConfirmDialog(false);
             setIsLoading(true);
             await axios.delete(route('audiobooks.destroy', { audiobook: audiobook.id }));
+
+            // Show success notification
+            toast.success('Audiobook deleted successfully!');
+
+            // Call the callback to notify parent component about deletion
+            if (onAudiobookDeleted) {
+                onAudiobookDeleted(audiobook.id);
+            }
+
             onClose();
         } catch (error) {
             console.error('Error deleting audiobook:', error);
-            alert('Failed to delete audiobook.');
+            toast.error('Failed to delete audiobook.');
         } finally {
             setIsLoading(false);
         }
@@ -282,15 +313,21 @@ const ViewPostModal = ({ isOpen, onClose, audiobookId }: ViewPostModalProps) => 
                                     onClick={toggleFavorite}
                                     variant="ghost"
                                     className={`flex items-center gap-2 ${isFavorited ? 'text-red-500' : 'text-black dark:text-white'}`}
+                                    disabled={isLikeLoading}
                                 >
-                                    <Heart className={`h-5 w-5 ${isFavorited ? 'fill-current' : ''}`} />
+                                    <Heart className={`h-5 w-5 ${isFavorited ? 'fill-current' : ''} ${isLikeLoading ? 'animate-pulse' : ''}`} />
                                 </Button>
                                 <Button variant="ghost" className="" onClick={handleDownload}>
                                     <Download className="h-5 w-5" />
                                 </Button>
                                 {auth.user && audiobook?.user?.id === auth.user.id && (
-                                    <Button variant="ghost" className="rounded-full bg-red-800 text-white" onClick={handleDelete}>
-                                        DELETE
+                                    <Button
+                                        variant="ghost"
+                                        className="rounded-full bg-red-800 text-white"
+                                        onClick={handleDelete}
+                                        disabled={isLoading}
+                                    >
+                                        {isLoading ? 'Deleting...' : 'DELETE'}
                                     </Button>
                                 )}
                             </div>

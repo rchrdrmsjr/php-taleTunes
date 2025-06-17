@@ -177,11 +177,18 @@ export default function Upload() {
     const handleContinue = () => {
         clearAllFields();
         setShowContinueModal(false);
+        // Refresh dashboard data to show the new audiobook
+        router.reload({ only: ['userAudiobooks', 'otherAudiobooks', 'favoriteAudiobooks'] });
     };
+
     const handleGoToDashboard = () => {
         clearAllFields();
         setShowContinueModal(false);
-        router.visit('/dashboard');
+        // Refresh dashboard data to show the new audiobook
+        router.visit('/dashboard', {
+            only: ['userAudiobooks', 'otherAudiobooks', 'favoriteAudiobooks'],
+            replace: true,
+        });
     };
 
     const handleRemoveCoverImage = (indexToRemove: number) => {
